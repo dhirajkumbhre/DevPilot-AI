@@ -6,10 +6,23 @@
 |
 | Purpose
 | -------
-| This service communicates with the backend health endpoint.
+| This file is responsible for communicating with the backend
+| Health API.
 |
-| React components should never know HOW an API request is made.
-| They simply call this service and receive data.
+| React components SHOULD NOT directly make HTTP requests.
+|
+| Instead:
+|
+| App.jsx
+|      │
+|      ▼
+| health.service.js
+|      │
+|      ▼
+| Axios
+|      │
+|      ▼
+| Express Backend
 |
 |--------------------------------------------------------------------------
 */
@@ -21,33 +34,120 @@ import axios from "axios";
 | Backend Base URL
 |--------------------------------------------------------------------------
 |
-| Every request in development starts from this address.
+| Every API request starts from this URL.
 |
-| Later we will move this into an environment variable.
+| During development:
+| http://localhost:5000
+|
+| Later we'll move this into:
+| VITE_API_URL
 |
 |--------------------------------------------------------------------------
 */
 
-const API_URL = "http://localhost:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 /*
 |--------------------------------------------------------------------------
-| Check Backend Health
+| Create Axios Instance
 |--------------------------------------------------------------------------
 |
-| Sends:
-|     GET /api/health
+| Instead of writing:
 |
-| Returns:
-|     Backend health information
+| axios.get(...)
+| axios.post(...)
+| axios.put(...)
+|
+| everywhere,
+|
+| we create one reusable Axios object.
 |
 |--------------------------------------------------------------------------
 */
 
-export const getBackendHealth = async () => {
+const api = axios.create({
 
-    const response = await axios.get(`${API_URL}/api/health`);
+    baseURL: API_BASE_URL,
 
-    return response.data;
+    headers: {
 
-};
+        "Content-Type": "application/json"
+
+    },
+
+    timeout: 10000
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Function : getBackendHealth
+|--------------------------------------------------------------------------
+|
+| Purpose
+| -------
+| Sends a GET request to:
+|
+| GET /api/health
+|
+| Returns:
+|
+| {
+|    success,
+|    project,
+|    version,
+|    message
+| }
+|
+|--------------------------------------------------------------------------
+*/
+
+export async function getBackendHealth() {
+
+    try {
+
+        /*
+        --------------------------------------------------------------
+        | Send GET Request
+        --------------------------------------------------------------
+        */
+
+        const response = await api.get("/api/health");
+
+        /*
+        --------------------------------------------------------------
+        | Return only JSON data
+        --------------------------------------------------------------
+        */
+
+        return response.data;
+
+    }
+
+    catch (error) {
+
+        /*
+        --------------------------------------------------------------
+        | Print error for debugging
+        --------------------------------------------------------------
+        */
+
+        console.error(
+
+            "Health Service Error:",
+
+            error
+
+        );
+
+        /*
+        --------------------------------------------------------------
+        | Pass error back to App.jsx
+        --------------------------------------------------------------
+        */
+
+        throw error;
+
+    }
+
+}
