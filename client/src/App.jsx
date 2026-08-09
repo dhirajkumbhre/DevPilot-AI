@@ -4,47 +4,103 @@
 | Project     : DevPilot AI
 |--------------------------------------------------------------------------
 |
-| Purpose
-| -------
-| Root component of our application.
+| Purpose:
+| Root component of the React application.
 |
-| Responsibilities
-| ----------------
-| • Check whether backend is running
-| • Display backend information
-| • Show loading state
+| Responsibilities:
+|
+| 1. Check backend health.
+| 2. Show loading state.
+| 3. Show backend error state.
+| 4. Determine whether the user is authenticated.
+| 5. Show Login or Dashboard accordingly.
 |
 |--------------------------------------------------------------------------
 */
 
 import { useEffect, useState } from "react";
 
-// Import service responsible for backend communication
+/*
+|--------------------------------------------------------------------------
+| Backend Health Service
+|--------------------------------------------------------------------------
+*/
+
 import { getBackendHealth } from "./services/health.service";
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Context
+|--------------------------------------------------------------------------
+*/
+
+import { useAuth } from "./context/AuthContext.jsx";
+
+/*
+|--------------------------------------------------------------------------
+| Application Pages
+|--------------------------------------------------------------------------
+*/
+
+import Login from "./pages/Login.jsx";
+
+import Dashboard from "./pages/Dashboard.jsx";
+
+
+/*
+|--------------------------------------------------------------------------
+| App Component
+|--------------------------------------------------------------------------
+*/
 
 function App() {
 
     /*
     |--------------------------------------------------------------------------
-    | Component State
+    | Authentication State
+    |--------------------------------------------------------------------------
+    |
+    | AuthContext tells us whether a JWT currently exists.
+    |
     |--------------------------------------------------------------------------
     */
 
-    // Stores backend response
-    const [health, setHealth] = useState(null);
+    const { token } = useAuth();
 
-    // Shows loading while request is in progress
-    const [loading, setLoading] = useState(true);
-
-    // Stores any connection error
-    const [error, setError] = useState("");
 
     /*
     |--------------------------------------------------------------------------
-    | Fetch Backend Health
+    | Backend Health State
+    |--------------------------------------------------------------------------
+    */
+
+    const [health, setHealth] = useState(null);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Loading State
+    |--------------------------------------------------------------------------
+    */
+
+    const [loading, setLoading] = useState(true);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Error State
+    |--------------------------------------------------------------------------
+    */
+
+    const [error, setError] = useState("");
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backend Health Check
     |--------------------------------------------------------------------------
     |
-    | Runs only once after page loads.
+    | Runs once when App.jsx first loads.
     |
     |--------------------------------------------------------------------------
     */
@@ -55,27 +111,49 @@ function App() {
 
             try {
 
+                /*
+                Send request to our backend health endpoint.
+                */
+
                 const response = await getBackendHealth();
+
+                /*
+                Store backend response.
+                */
 
                 setHealth(response);
 
             } catch (err) {
 
-                console.error(err);
+                console.error(
+                    "Backend health check failed:",
+                    err
+                );
 
-                setError("Unable to connect to backend.");
+                setError(
+                    "Unable to connect to backend."
+                );
 
             } finally {
 
+                /*
+                Whether successful or failed,
+                the loading state is finished.
+                */
+
                 setLoading(false);
-
             }
-
         }
+
+
+        /*
+        Execute the health check.
+        */
 
         fetchBackendHealth();
 
     }, []);
+
 
     /*
     |--------------------------------------------------------------------------
@@ -89,17 +167,18 @@ function App() {
 
             <div style={styles.container}>
 
-                <h2>Connecting to DevPilot AI...</h2>
+                <h2>
+                    Connecting to DevPilot AI...
+                </h2>
 
             </div>
-
         );
-
     }
+
 
     /*
     |--------------------------------------------------------------------------
-    | Error Screen
+    | Backend Error Screen
     |--------------------------------------------------------------------------
     */
 
@@ -109,73 +188,150 @@ function App() {
 
             <div style={styles.container}>
 
-                <h2>🔴 Backend Offline</h2>
+                <h2>
+                    🔴 Backend Offline
+                </h2>
 
-                <p>{error}</p>
+                <p>
+                    {error}
+                </p>
 
             </div>
-
         );
-
     }
+
 
     /*
     |--------------------------------------------------------------------------
-    | Success Screen
+    | Authentication-Based Application
+    |--------------------------------------------------------------------------
+    |
+    | If a JWT exists:
+    |
+    |     → Dashboard
+    |
+    | Otherwise:
+    |
+    |     → Login
+    |
     |--------------------------------------------------------------------------
     */
 
     return (
 
-        <div style={styles.container}>
+        <div>
 
-            <h1>🚀 DevPilot AI</h1>
+            {/* ----------------------------------------------------------
+                Backend Health Information
+            ---------------------------------------------------------- */}
 
-            <h3>AI Powered Developer Assistant</h3>
+            <div style={styles.healthContainer}>
 
-            <hr />
+                <h1>
+                    🚀 DevPilot AI
+                </h1>
 
-            <h2 style={{ color: "green" }}>
+                <h3>
+                    AI Powered Developer Assistant
+                </h3>
 
-                🟢 Backend Connected
+                <hr />
 
-            </h2>
+                <h2 style={styles.connected}>
 
-            <p>
+                    🟢 Backend Connected
 
-                <strong>Project :</strong> {health.project}
+                </h2>
 
-            </p>
+                <p>
 
-            <p>
+                    <strong>
+                        Project:
+                    </strong>{" "}
 
-                <strong>Version :</strong> {health.version}
+                    {health?.project}
 
-            </p>
+                </p>
 
-            <p>
+                <p>
 
-                <strong>Status :</strong> {health.message}
+                    <strong>
+                        Version:
+                    </strong>{" "}
 
-            </p>
+                    {health?.version}
+
+                </p>
+
+                <p>
+
+                    <strong>
+                        Status:
+                    </strong>{" "}
+
+                    {health?.message}
+
+                </p>
+
+            </div>
+
+
+            {/* ----------------------------------------------------------
+                Login OR Dashboard
+            ---------------------------------------------------------- */}
+
+            {token ? (
+
+                /*
+                User has a JWT.
+                Show protected dashboard.
+                */
+
+                <Dashboard />
+
+            ) : (
+
+                /*
+                User does not have a JWT.
+                Show login page.
+                */
+
+                <Login />
+
+            )}
 
         </div>
-
     );
-
 }
+
 
 /*
 |--------------------------------------------------------------------------
-| Simple Styles
-|--------------------------------------------------------------------------
-|
-| Later we'll replace these with Tailwind CSS.
-|
+| Temporary Styles
 |--------------------------------------------------------------------------
 */
 
 const styles = {
+
+    healthContainer: {
+
+        maxWidth: "700px",
+
+        margin: "30px auto",
+
+        padding: "25px",
+
+        border: "1px solid #ddd",
+
+        borderRadius: "10px",
+
+        textAlign: "center",
+
+        fontFamily: "Arial, sans-serif",
+
+        backgroundColor: "#ffffff",
+    },
+
 
     container: {
 
@@ -185,16 +341,23 @@ const styles = {
 
         padding: "30px",
 
-        border: "1px solid #ddd",
-
-        borderRadius: "10px",
-
         textAlign: "center",
 
-        fontFamily: "Arial"
+        fontFamily: "Arial, sans-serif",
+    },
 
-    }
 
+    connected: {
+
+        color: "green",
+    },
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| Export
+|--------------------------------------------------------------------------
+*/
 
 export default App;
