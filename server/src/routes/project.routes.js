@@ -5,17 +5,24 @@ import { createProject } from "../controllers/project.controller.js";
 const router = express.Router();
 
 /*
- * Create Project
- *
- * This route is protected.
- * The user must provide a valid JWT.
- *
- * POST /api/projects
- */
+|--------------------------------------------------------------------------
+| Create Project
+|--------------------------------------------------------------------------
+|
+| POST /api/projects
+|
+| This route is protected.
+|
+| The request must contain a valid JWT before the
+| createProject controller is allowed to run.
+|
+|--------------------------------------------------------------------------
+*/
+
 router.post(
-  "/",
-  authenticateUser,
-  createProject
+    "/",
+    authenticateUser,
+    createProject
 );
 
 export default router;

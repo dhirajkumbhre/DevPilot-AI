@@ -1,22 +1,73 @@
+/*
+--------------------------------------------------------------
+File        : db.js
+Project     : DevPilot AI
+--------------------------------------------------------------
+
+Purpose:
+Creates and manages the connection between our Node.js
+application and MongoDB.
+--------------------------------------------------------------
+*/
+
 import mongoose from "mongoose";
 
 /*
- * Connect the application to MongoDB.
- *
- * Keeping the database connection in its own file makes
- * the server easier to maintain and test.
- */
+--------------------------------------------------------------
+Connect to MongoDB
+--------------------------------------------------------------
+*/
+
 const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
+    try {
+        /*
+        ----------------------------------------------------------
+        MongoDB Connection
+        ----------------------------------------------------------
 
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
+        MONGO_URI is stored inside our .env file.
 
-    // Stop the application if database connection fails.
-    process.exit(1);
-  }
+        Example:
+
+        MONGO_URI=mongodb+srv://...
+        ----------------------------------------------------------
+        */
+
+        await mongoose.connect(process.env.MONGO_URI);
+
+        console.log("✅ MongoDB connected successfully");
+
+    } catch (error) {
+
+        /*
+        ----------------------------------------------------------
+        Connection Error
+        ----------------------------------------------------------
+        */
+
+        console.error(
+            "❌ MongoDB Connection Failed:",
+            error.message
+        );
+
+        /*
+        ----------------------------------------------------------
+        Stop Application
+        ----------------------------------------------------------
+
+        If the database is unavailable, there is no point
+        running our backend API.
+        ----------------------------------------------------------
+        */
+
+        process.exit(1);
+    }
 };
+
+/*
+--------------------------------------------------------------
+Export
+--------------------------------------------------------------
+*/
 
 export default connectDB;

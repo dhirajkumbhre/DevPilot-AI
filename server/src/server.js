@@ -1,31 +1,67 @@
+/*
+--------------------------------------------------------------
+File        : server.js
+Project     : DevPilot AI
+--------------------------------------------------------------
+
+Purpose:
+Starts the backend server and establishes the MongoDB
+database connection.
+--------------------------------------------------------------
+*/
+
 import dotenv from "dotenv";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 
 /*
- * Load environment variables from .env
- */
+--------------------------------------------------------------
+Load Environment Variables
+--------------------------------------------------------------
+*/
+
 dotenv.config();
+
+/*
+--------------------------------------------------------------
+Server Configuration
+--------------------------------------------------------------
+*/
 
 const PORT = process.env.PORT || 5000;
 
 /*
- * Start the application.
- *
- * First connect to MongoDB,
- * then start the Express server.
- */
-const startServer = async () => {
-  try {
-    await connectDB();
+--------------------------------------------------------------
+Start Server
+--------------------------------------------------------------
+*/
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error.message);
-    process.exit(1);
-  }
+const startServer = async () => {
+    try {
+        /*
+        Connect to MongoDB before starting the API server.
+        */
+
+        await connectDB();
+
+        /*
+        Start Express server.
+        */
+
+        app.listen(PORT, () => {
+            console.log(`🚀 DevPilot AI server running on port ${PORT}`);
+        });
+
+    } catch (error) {
+        console.error("❌ Server failed to start:", error.message);
+        process.exit(1);
+    }
 };
+
+/*
+--------------------------------------------------------------
+Initialize Application
+--------------------------------------------------------------
+*/
 
 startServer();
