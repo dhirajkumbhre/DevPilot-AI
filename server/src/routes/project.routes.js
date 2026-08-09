@@ -1,22 +1,61 @@
+/*
+--------------------------------------------------------------
+| File        : project.routes.js
+| Project     : DevPilot AI
+--------------------------------------------------------------
+|
+| Purpose:
+| Defines all API routes related to projects.
+|
+| Every project route is protected by JWT authentication.
+|
+--------------------------------------------------------------
+*/
+
 import express from "express";
+
+/*
+--------------------------------------------------------------
+| Authentication Middleware
+--------------------------------------------------------------
+|
+| This middleware checks the JWT before allowing the request
+| to reach the controller.
+|
+*/
+
 import authenticateUser from "../middleware/auth.middleware.js";
-import { createProject } from "../controllers/project.controller.js";
+
+/*
+--------------------------------------------------------------
+| Project Controllers
+--------------------------------------------------------------
+|
+| Controllers handle the HTTP request/response.
+|
+*/
+
+import {
+    createProject,
+    getUserProjects,
+    getProjectById,
+    updateProject,
+    deleteProject,
+} from "../controllers/project.controller.js";
+
 
 const router = express.Router();
 
+
 /*
-|--------------------------------------------------------------------------
-| Create Project
-|--------------------------------------------------------------------------
+==============================================================
+| CREATE PROJECT
+==============================================================
 |
 | POST /api/projects
 |
-| This route is protected.
+| Creates a new project for the authenticated user.
 |
-| The request must contain a valid JWT before the
-| createProject controller is allowed to run.
-|
-|--------------------------------------------------------------------------
 */
 
 router.post(
@@ -24,5 +63,92 @@ router.post(
     authenticateUser,
     createProject
 );
+
+
+/*
+==============================================================
+| GET MY PROJECTS
+==============================================================
+|
+| GET /api/projects
+|
+| Returns all projects belonging to the logged-in user.
+|
+*/
+
+router.get(
+    "/",
+    authenticateUser,
+    getUserProjects
+);
+
+
+/*
+==============================================================
+| GET SINGLE PROJECT
+==============================================================
+|
+| GET /api/projects/:id
+|
+| Returns one project.
+|
+| Example:
+|
+| GET /api/projects/64abc123...
+|
+*/
+
+router.get(
+    "/:id",
+    authenticateUser,
+    getProjectById
+);
+
+
+/*
+==============================================================
+| UPDATE PROJECT
+==============================================================
+|
+| PUT /api/projects/:id
+|
+| Updates a project belonging to the logged-in user.
+|
+*/
+
+router.put(
+    "/:id",
+    authenticateUser,
+    updateProject
+);
+
+
+/*
+==============================================================
+| DELETE PROJECT
+==============================================================
+|
+| DELETE /api/projects/:id
+|
+| Deletes a project belonging to the logged-in user.
+|
+*/
+
+router.delete(
+    "/:id",
+    authenticateUser,
+    deleteProject
+);
+
+
+/*
+--------------------------------------------------------------
+| Export Router
+--------------------------------------------------------------
+|
+| app.js imports this router as the default export.
+|
+--------------------------------------------------------------
+*/
 
 export default router;
