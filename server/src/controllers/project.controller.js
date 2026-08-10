@@ -26,6 +26,7 @@ import {
     updateProjectService,
     deleteProjectService,
     getProjectFilesService,
+    updateProjectFileService,
 } from "../services/project.service.js";
 
 
@@ -371,4 +372,134 @@ export const getProjectFiles = async (req, res) => {
             message: error.message,
         });
     }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Update Project File
+|--------------------------------------------------------------------------
+|
+| PUT /api/projects/:id/files/:fileId
+|
+| Updates the content of a project file.
+|
+|--------------------------------------------------------------------------
+*/
+
+export const updateProjectFile = async (req, res) => {
+
+    try {
+
+        /*
+        ------------------------------------------------------------------
+        | Get IDs from URL
+        ------------------------------------------------------------------
+        |
+        | Example:
+        |
+        | PUT /api/projects/123/files/456
+        |
+        | req.params.id
+        | req.params.fileId
+        |
+        ------------------------------------------------------------------
+        */
+
+        const {
+            id,
+            fileId,
+        } = req.params;
+
+
+        /*
+        ------------------------------------------------------------------
+        | Get new file content
+        ------------------------------------------------------------------
+        */
+
+        const {
+            content,
+        } = req.body;
+
+
+        /*
+        ------------------------------------------------------------------
+        | Basic Validation
+        ------------------------------------------------------------------
+        */
+
+        if (
+            typeof content !== "string"
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "File content must be a string",
+
+            });
+
+        }
+
+
+        /*
+        ------------------------------------------------------------------
+        | Update File
+        ------------------------------------------------------------------
+        */
+
+        const file =
+            await updateProjectFileService({
+
+                projectId: id,
+
+                fileId,
+
+                userId:
+                    req.user.userId,
+
+                content,
+
+            });
+
+
+        /*
+        ------------------------------------------------------------------
+        | Successful Response
+        ------------------------------------------------------------------
+        */
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "File saved successfully",
+
+            file,
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Update project file error:",
+            error.message
+        );
+
+
+        return res.status(404).json({
+
+            success: false,
+
+            message:
+                error.message,
+
+        });
+
+    }
+
 };

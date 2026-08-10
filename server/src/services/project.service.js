@@ -7,19 +7,18 @@
 | Purpose:
 | Contains the business logic for Project operations.
 |
-| The controller receives the HTTP request.
-| This service performs the actual project/database operations.
+| This file handles:
 |
-| CRUD:
-|
-| C - Create
-| R - Read
-| U - Update
-| D - Delete
+| 1. Create Project
+| 2. Get User Projects
+| 3. Get Single Project
+| 4. Update Project
+| 5. Delete Project
+| 6. Get Project Files
+| 7. Update Project File
 |
 |--------------------------------------------------------------------------
 */
-
 
 import Project from "../models/project.model.js";
 import ProjectFile from "../models/projectFile.model.js";
@@ -27,12 +26,6 @@ import ProjectFile from "../models/projectFile.model.js";
 /*
 |--------------------------------------------------------------------------
 | Create Project
-|--------------------------------------------------------------------------
-|
-| Creates a new project and associates it with the currently
-| authenticated user.
-|
-| userId comes from the JWT authentication middleware.
 |--------------------------------------------------------------------------
 */
 
@@ -43,16 +36,8 @@ export const createProjectService = async ({
 }) => {
 
     const project = await Project.create({
-
         name,
-
         description,
-
-        /*
-        The owner field connects this project to the user
-        who created it.
-        */
-
         owner: userId,
     });
 
@@ -65,11 +50,8 @@ export const createProjectService = async ({
 | Get User Projects
 |--------------------------------------------------------------------------
 |
-| Returns ONLY projects belonging to the authenticated user.
+| Returns only projects belonging to the authenticated user.
 |
-| This is important for authorization.
-|
-| User A should not receive User B's projects.
 |--------------------------------------------------------------------------
 */
 
@@ -77,8 +59,9 @@ export const getUserProjectsService = async (userId) => {
 
     const projects = await Project.find({
         owner: userId,
-    })
-        .sort({ createdAt: -1 });
+    }).sort({
+        createdAt: -1,
+    });
 
     return projects;
 };
@@ -91,13 +74,6 @@ export const getUserProjectsService = async (userId) => {
 |
 | Finds one project belonging to the authenticated user.
 |
-| We check BOTH:
-|
-| 1. Project ID
-| 2. Owner ID
-|
-| This prevents a user from accessing another user's project
-| simply by changing the project ID in the URL.
 |--------------------------------------------------------------------------
 */
 
@@ -122,9 +98,6 @@ export const getProjectByIdService = async ({
 /*
 |--------------------------------------------------------------------------
 | Update Project
-|--------------------------------------------------------------------------
-|
-| Updates a project only if it belongs to the authenticated user.
 |--------------------------------------------------------------------------
 */
 
@@ -162,9 +135,6 @@ export const updateProjectService = async ({
 |--------------------------------------------------------------------------
 | Delete Project
 |--------------------------------------------------------------------------
-|
-| Deletes a project only if it belongs to the authenticated user.
-|--------------------------------------------------------------------------
 */
 
 export const deleteProjectService = async ({
@@ -190,19 +160,10 @@ export const deleteProjectService = async ({
 | Get Project Files
 |--------------------------------------------------------------------------
 |
-| Returns all files belonging to a project.
+| GET /api/projects/:id/files
 |
-| IMPORTANT:
-|
-| We first verify that the project belongs to the authenticated user.
-|
-| This prevents:
-|
-| User A
-|   ↓
-| manually changes project ID
-|   ↓
-| accesses User B's files
+| Before returning files we verify that the project belongs
+| to the authenticated user.
 |
 |--------------------------------------------------------------------------
 */
@@ -223,32 +184,22 @@ export const getProjectFilesService = async ({
         owner: userId,
     });
 
-    /*
-    If the project doesn't belong to the user,
-    don't return any files.
-    */
-
     if (!project) {
-
-        throw new Error(
-            "Project not found"
-        );
+        throw new Error("Project not found");
     }
 
 
     /*
     ----------------------------------------------------------------------
-    | Step 2: Find Files
+    | Step 2: Find Existing Files
     ----------------------------------------------------------------------
-    |
-    | Only return files belonging to this project.
-    |
     */
 
     let files = await ProjectFile.find({
         project: projectId,
-    })
-        .sort({ path: 1 });
+    }).sort({
+        path: 1,
+    });
 
 
     /*
@@ -256,20 +207,15 @@ export const getProjectFilesService = async ({
     | Step 3: Create Starter Files
     ----------------------------------------------------------------------
     |
-    | Your existing project was created before we introduced
-    | ProjectFile.
+    | This is useful for older projects that were created before
+    | ProjectFile was introduced.
     |
-    | Therefore, an old project may have ZERO files.
-    |
-    | To make the existing project immediately usable,
-    | we create a few starter files the first time they are requested.
-    |
-    ----------------------------------------------------------------------
     */
 
     if (files.length === 0) {
 
         const starterFiles = [
+
             {
                 project: projectId,
                 path: "README.md",
@@ -304,12 +250,9 @@ export const getProjectFilesService = async ({
                 content:
                     "// Components folder",
             },
+
         ];
 
-
-        /*
-        Insert the starter files into MongoDB.
-        */
 
         files = await ProjectFile.insertMany(
             starterFiles
@@ -317,11 +260,91 @@ export const getProjectFilesService = async ({
     }
 
 
+    return files;
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Update Project File
+|--------------------------------------------------------------------------
+|
+| PUT /api/projects/:id/files/:fileId
+|
+| Saves edited file content into MongoDB.
+|
+|--------------------------------------------------------------------------
+*/
+
+export const updateProjectFileService = async ({
+    projectId,
+    fileId,
+    userId,
+    content,
+}) => {
+
     /*
-    ------------a----------------------------------------------------------
-    | Return Files
+    ----------------------------------------------------------------------
+    | Step 1: Verify Project Ownership
     ----------------------------------------------------------------------
     */
 
-    return files;
+    const project = await Project.findOne({
+        _id: projectId,
+        owner: userId,
+    });
+
+    if (!project) {
+        throw new Error("Project not found");
+    }
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Step 2: Find File
+    ----------------------------------------------------------------------
+    |
+    | We check BOTH:
+    |
+    | file ID
+    | +
+    | project ID
+    |
+    | This prevents a user from modifying a file from another project.
+    |
+    */
+
+    const file = await ProjectFile.findOneAndUpdate(
+        {
+            _id: fileId,
+            project: projectId,
+        },
+        {
+            content,
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    );
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Step 3: File Not Found
+    ----------------------------------------------------------------------
+    */
+
+    if (!file) {
+        throw new Error("Project file not found");
+    }
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Step 4: Return Updated File
+    ----------------------------------------------------------------------
+    */
+
+    return file;
 };

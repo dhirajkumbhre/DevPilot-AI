@@ -5,25 +5,23 @@
 |--------------------------------------------------------------------------
 |
 | Purpose:
-| -------
-| This file contains all frontend API requests related to projects.
+| Contains all frontend API requests related to projects.
 |
-| React components should not contain the actual fetch() logic.
+| React components should not contain fetch() logic.
 |
-| Instead:
-|
-| Dashboard
-|     ↓
+| React Component
+|       ↓
 | project.service.js
-|     ↓
+|       ↓
 | Express API
-|     ↓
+|       ↓
 | MongoDB
 |
 |--------------------------------------------------------------------------
 */
 
-const API_URL = "http://localhost:5000/api/projects";
+const API_URL =
+    "http://localhost:5000/api/projects";
 
 
 /*
@@ -31,29 +29,23 @@ const API_URL = "http://localhost:5000/api/projects";
 | Authentication Headers
 |--------------------------------------------------------------------------
 |
-| Our project API is protected by JWT authentication.
-|
-| The JWT was stored in localStorage after successful login.
-|
-| We retrieve it here and send it to Express using:
-|
-| Authorization: Bearer <JWT>
+| Gets the JWT from localStorage and sends it to the backend.
 |
 |--------------------------------------------------------------------------
 */
 
 const getAuthHeaders = () => {
 
-    // Get the JWT saved by AuthContext after login.
-    const token = localStorage.getItem("token");
+    const token =
+        localStorage.getItem("token");
 
     return {
 
-        // Tell Express that we are sending JSON.
-        "Content-Type": "application/json",
+        "Content-Type":
+            "application/json",
 
-        // Send the JWT to the authentication middleware.
-        Authorization: `Bearer ${token}`,
+        Authorization:
+            `Bearer ${token}`,
     };
 };
 
@@ -65,59 +57,34 @@ const getAuthHeaders = () => {
 |
 | GET /api/projects
 |
-| Returns all projects belonging to the authenticated user.
-|
 |--------------------------------------------------------------------------
 */
 
 export const getProjects = async () => {
 
-    /*
-    Send GET request to the backend.
-    */
+    const response = await fetch(
+        API_URL,
+        {
+            method: "GET",
 
-    const response = await fetch(API_URL, {
-
-        method: "GET",
-
-        /*
-        Include JWT authentication.
-        */
-
-        headers: getAuthHeaders(),
-    });
+            headers:
+                getAuthHeaders(),
+        }
+    );
 
 
-    /*
-    Convert backend JSON into a JavaScript object.
-    */
+    const data =
+        await response.json();
 
-    const data = await response.json();
-
-
-    /*
-    If the backend returns an error status,
-    throw an error so Dashboard can handle it.
-    */
 
     if (!response.ok) {
 
         throw new Error(
-            data.message || "Failed to fetch projects"
+            data.message ||
+            "Failed to fetch projects"
         );
     }
 
-
-    /*
-    Our backend returns:
-
-    {
-        success: true,
-        projects: [...]
-    }
-
-    Return only the projects array.
-    */
 
     return data.projects || [];
 };
@@ -130,8 +97,6 @@ export const getProjects = async () => {
 |
 | POST /api/projects
 |
-| Creates a new project for the authenticated user.
-|
 |--------------------------------------------------------------------------
 */
 
@@ -140,61 +105,35 @@ export const createProject = async ({
     description,
 }) => {
 
-    /*
-    Send project data to the backend.
-    */
+    const response = await fetch(
+        API_URL,
+        {
+            method: "POST",
 
-    const response = await fetch(API_URL, {
+            headers:
+                getAuthHeaders(),
 
-        method: "POST",
-
-        /*
-        Include JSON content type and JWT.
-        */
-
-        headers: getAuthHeaders(),
-
-        /*
-        Convert JavaScript object into JSON.
-        */
-
-        body: JSON.stringify({
-            name,
-            description,
-        }),
-    });
+            body:
+                JSON.stringify({
+                    name,
+                    description,
+                }),
+        }
+    );
 
 
-    /*
-    Read backend response.
-    */
+    const data =
+        await response.json();
 
-    const data = await response.json();
-
-
-    /*
-    Handle backend errors.
-    */
 
     if (!response.ok) {
 
         throw new Error(
-            data.message || "Failed to create project"
+            data.message ||
+            "Failed to create project"
         );
     }
 
-
-    /*
-    Backend returns:
-
-    {
-        success: true,
-        message: "...",
-        project: {...}
-    }
-
-    Return the newly created project.
-    */
 
     return data.project;
 };
@@ -210,38 +149,30 @@ export const createProject = async ({
 |--------------------------------------------------------------------------
 */
 
-export const getProjectById = async (projectId) => {
-
-    /*
-    Add the project ID to the API URL.
-    */
+export const getProjectById = async (
+    projectId
+) => {
 
     const response = await fetch(
         `${API_URL}/${projectId}`,
         {
-
             method: "GET",
 
-            headers: getAuthHeaders(),
+            headers:
+                getAuthHeaders(),
         }
     );
 
 
-    /*
-    Convert response to JavaScript.
-    */
+    const data =
+        await response.json();
 
-    const data = await response.json();
-
-
-    /*
-    Handle errors.
-    */
 
     if (!response.ok) {
 
         throw new Error(
-            data.message || "Failed to fetch project"
+            data.message ||
+            "Failed to fetch project"
         );
     }
 
@@ -265,38 +196,31 @@ export const updateProject = async (
     projectData
 ) => {
 
-    /*
-    Send updated project information.
-    */
-
     const response = await fetch(
         `${API_URL}/${projectId}`,
         {
-
             method: "PUT",
 
-            headers: getAuthHeaders(),
+            headers:
+                getAuthHeaders(),
 
-            body: JSON.stringify(projectData),
+            body:
+                JSON.stringify(
+                    projectData
+                ),
         }
     );
 
 
-    /*
-    Read backend response.
-    */
+    const data =
+        await response.json();
 
-    const data = await response.json();
-
-
-    /*
-    Handle errors.
-    */
 
     if (!response.ok) {
 
         throw new Error(
-            data.message || "Failed to update project"
+            data.message ||
+            "Failed to update project"
         );
     }
 
@@ -315,44 +239,37 @@ export const updateProject = async (
 |--------------------------------------------------------------------------
 */
 
-export const deleteProject = async (projectId) => {
-
-    /*
-    Send delete request.
-    */
+export const deleteProject = async (
+    projectId
+) => {
 
     const response = await fetch(
         `${API_URL}/${projectId}`,
         {
-
             method: "DELETE",
 
-            headers: getAuthHeaders(),
+            headers:
+                getAuthHeaders(),
         }
     );
 
 
-    /*
-    Read backend response.
-    */
+    const data =
+        await response.json();
 
-    const data = await response.json();
-
-
-    /*
-    Handle errors.
-    */
 
     if (!response.ok) {
 
         throw new Error(
-            data.message || "Failed to delete project"
+            data.message ||
+            "Failed to delete project"
         );
     }
 
 
     return data;
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -361,76 +278,87 @@ export const deleteProject = async (projectId) => {
 |
 | GET /api/projects/:id/files
 |
-| This function asks the backend for all files belonging
-| to the currently selected project.
-|
-| Flow:
-|
-| ProjectWorkspace
-|      ↓
-| getProjectFiles()
-|      ↓
-| Express API
-|      ↓
-| MongoDB
-|
 |--------------------------------------------------------------------------
 */
 
-export const getProjectFiles = async (projectId) => {
-
-    /*
-    ----------------------------------------------------------------------
-    | Send request to backend
-    ----------------------------------------------------------------------
-    |
-    | The project ID tells the backend which project's files we need.
-    |
-    */
+export const getProjectFiles = async (
+    projectId
+) => {
 
     const response = await fetch(
         `${API_URL}/${projectId}/files`,
         {
             method: "GET",
 
-            /*
-            Include the JWT because the backend protects
-            project files with authentication.
-            */
-
-            headers: getAuthHeaders(),
+            headers:
+                getAuthHeaders(),
         }
     );
 
 
-    /*
-    ----------------------------------------------------------------------
-    | Convert JSON response
-    ----------------------------------------------------------------------
-    */
+    const data =
+        await response.json();
 
-    const data = await response.json();
-
-
-    /*
-    ----------------------------------------------------------------------
-    | Handle backend errors
-    ----------------------------------------------------------------------
-    */
 
     if (!response.ok) {
 
         throw new Error(
-            data.message || "Failed to fetch project files"
+            data.message ||
+            "Failed to fetch project files"
         );
     }
 
 
-    /*
-    ----------------------------------------------------------------------
-    | Return files
-    ----------------------------------------------------------------------
-    */
-
     return data.files || [];
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Update Project File
+|--------------------------------------------------------------------------
+|
+| PUT /api/projects/:id/files/:fileId
+|
+| This is the IMPORTANT function for our Save File button.
+|
+|--------------------------------------------------------------------------
+*/
+
+export const updateProjectFile = async (
+    projectId,
+    fileId,
+    content
+) => {
+
+    const response = await fetch(
+        `${API_URL}/${projectId}/files/${fileId}`,
+        {
+            method: "PUT",
+
+            headers:
+                getAuthHeaders(),
+
+            body:
+                JSON.stringify({
+                    content,
+                }),
+        }
+    );
+
+
+    const data =
+        await response.json();
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.message ||
+            "Failed to save project file"
+        );
+    }
+
+
+    return data.file;
 };

@@ -42,6 +42,7 @@ import {
     updateProject,
     deleteProject,
     getProjectFiles,
+    updateProjectFile,
 } from "../controllers/project.controller.js";
 
 
@@ -164,6 +165,26 @@ router.delete(
     deleteProject
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE PROJECT FILE
+|--------------------------------------------------------------------------
+|
+| PUT /api/projects/:id/files/:fileId
+|
+| Saves changes made to a project file.
+|
+| Authentication is required.
+|
+|--------------------------------------------------------------------------
+*/
+
+router.put(
+    "/:id/files/:fileId",
+    authenticateUser,
+    updateProjectFile
+);
 
 /*
 --------------------------------------------------------------
