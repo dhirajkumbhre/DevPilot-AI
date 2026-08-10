@@ -5,49 +5,25 @@
 |--------------------------------------------------------------------------
 |
 | Purpose:
-| --------
-| This is the main developer workspace for a project.
+| Main developer workspace for a project.
 |
-| Eventually this screen will contain:
+| Contains:
 |
-|     File Explorer
-|          +
-|     Code Editor
-|          +
-|     AI Assistant
-|
-| For now we are creating the layout and understanding
-| how the three major areas communicate.
-|
-|--------------------------------------------------------------------------
-|
-| Future Architecture:
-|
-| ProjectWorkspace
-|       |
-|       ├── FileExplorer
-|       |
-|       ├── CodeEditor
-|       |
-|       └── AIAssistant
+| 1. File Explorer
+| 2. Code Editor
+| 3. AI Assistant
 |
 |--------------------------------------------------------------------------
 */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { getProjectFiles } from "../services/project.service.js";
 
 
 /*
 |--------------------------------------------------------------------------
 | ProjectWorkspace Component
-|--------------------------------------------------------------------------
-|
-| project:
-|     The project selected by the user.
-|
-| onBack:
-|     Takes the user back to Project Details.
-|
 |--------------------------------------------------------------------------
 */
 
@@ -56,70 +32,161 @@ const ProjectWorkspace = ({
     onBack,
 }) => {
 
+    /*
+    |--------------------------------------------------------------------------
+    | Project Files
+    |--------------------------------------------------------------------------
+    |
+    | Files received from the backend.
+    |
+    */
+
+    const [files, setFiles] = useState([]);
+
 
     /*
     |--------------------------------------------------------------------------
     | Selected File
     |--------------------------------------------------------------------------
-    |
-    | Eventually this will contain the file selected from
-    | the file explorer.
-    |
-    | Example:
-    |
-    | "src/App.jsx"
-    |
-    |--------------------------------------------------------------------------
     */
 
-    const [
-        selectedFile,
-        setSelectedFile
-    ] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
 
     /*
     |--------------------------------------------------------------------------
-    | File List
-    |--------------------------------------------------------------------------
-    |
-    | These are temporary files.
-    |
-    | Later they will come from the backend/database
-    | or a connected Git repository.
-    |
+    | Loading State
     |--------------------------------------------------------------------------
     */
 
-    const files = [
+    const [filesLoading, setFilesLoading] = useState(false);
 
-        "README.md",
 
-        "package.json",
+    /*
+    |--------------------------------------------------------------------------
+    | Error State
+    |--------------------------------------------------------------------------
+    */
 
-        "src/App.jsx",
+    const [filesError, setFilesError] = useState("");
 
-        "src/main.jsx",
 
-        "src/components",
+    /*
+    |--------------------------------------------------------------------------
+    | Load Project Files
+    |--------------------------------------------------------------------------
+    |
+    | Runs whenever the selected project changes.
+    |
+    */
 
-    ];
+    useEffect(() => {
+
+        const loadFiles = async () => {
+
+            try {
+
+                setFilesLoading(true);
+
+                setFilesError("");
+
+                /*
+                Get project ID.
+                */
+
+                const projectId = project?._id;
+
+
+                if (!projectId) {
+
+                    throw new Error(
+                        "Project ID is missing."
+                    );
+                }
+
+
+                /*
+                Ask backend for project files.
+                */
+
+                const projectFiles =
+                    await getProjectFiles(projectId);
+
+
+                /*
+                Store files in React state.
+                */
+
+                setFiles(projectFiles || []);
+
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load project files:",
+                    error
+                );
+
+                setFilesError(
+                    error.message ||
+                    "Failed to load project files."
+                );
+
+            } finally {
+
+                setFilesLoading(false);
+
+            }
+
+        };
+
+
+        /*
+        Only load files when project exists.
+        */
+
+        if (project?._id) {
+
+            loadFiles();
+
+        }
+
+    }, [project?._id]);
 
 
     /*
     |--------------------------------------------------------------------------
     | Handle File Selection
     |--------------------------------------------------------------------------
-    |
-    | When the user clicks a file, we save that file
-    | in selectedFile state.
-    |
-    |--------------------------------------------------------------------------
     */
 
     const handleFileSelect = (file) => {
 
         setSelectedFile(file);
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get File Name
+    |--------------------------------------------------------------------------
+    |
+    | Backend may return:
+    |
+    | file.path
+    | or
+    | file.name
+    |
+    */
+
+    const getFileName = (file) => {
+
+        return (
+            file?.path ||
+            file?.name ||
+            "Unknown file"
+        );
 
     };
 
@@ -133,7 +200,6 @@ const ProjectWorkspace = ({
     return (
 
         <div style={styles.page}>
-
 
             {/* ----------------------------------------------------------
                 Workspace Header
@@ -150,8 +216,11 @@ const ProjectWorkspace = ({
                         ← Back
                     </button>
 
+
                     <span style={styles.projectName}>
+
                         🚀 {project?.name}
+
                     </span>
 
                 </div>
@@ -159,9 +228,7 @@ const ProjectWorkspace = ({
 
                 <div style={styles.headerRight}>
 
-                    <span>
-                        DevPilot AI
-                    </span>
+                    DevPilot AI
 
                 </div>
 
@@ -174,14 +241,12 @@ const ProjectWorkspace = ({
 
             <main style={styles.workspace}>
 
-
-                {/* ------------------------------------------------------
+                {/* ======================================================
                     LEFT PANEL
-                    File Explorer
-                ------------------------------------------------------ */}
+                    FILE EXPLORER
+                ====================================================== */}
 
                 <aside style={styles.filePanel}>
-
 
                     <div style={styles.panelHeader}>
 
@@ -194,117 +259,143 @@ const ProjectWorkspace = ({
 
                     <div style={styles.fileList}>
 
+                        {/* Loading */}
 
-                        {files.map((file) => (
+                        {filesLoading && (
 
-                            <button
+                            <p style={styles.message}>
 
-                                key={file}
+                                Loading files...
 
-                                onClick={() =>
-                                    handleFileSelect(
-                                        file
-                                    )
-                                }
+                            </p>
 
-                                style={
+                        )}
 
-                                    selectedFile === file
 
-                                        ? styles.selectedFile
+                        {/* Error */}
 
-                                        : styles.fileButton
+                        {filesError && (
 
-                                }
+                            <p style={styles.error}>
 
-                            >
+                                🔴 {filesError}
 
-                                {file.startsWith("src/")
-                                    ? "📄"
-                                    : "📋"}
+                            </p>
 
-                                {" "}
+                        )}
 
-                                {file}
 
-                            </button>
+                        {/* No files */}
 
-                        ))}
+                        {!filesLoading &&
+                            !filesError &&
+                            files.length === 0 && (
 
+                                <p style={styles.message}>
+
+                                    No files found.
+
+                                </p>
+
+                            )
+                        }
+
+
+                        {/* Files */}
+
+                        {!filesLoading &&
+                            files.map((file) => {
+
+                                const fileName =
+                                    getFileName(file);
+
+
+                                return (
+
+                                    <button
+                                        key={
+                                            file._id ||
+                                            fileName
+                                        }
+
+                                        onClick={() =>
+                                            handleFileSelect(
+                                                file
+                                            )
+                                        }
+
+                                        style={
+                                            selectedFile === file
+                                                ? styles.selectedFile
+                                                : styles.fileButton
+                                        }
+                                    >
+
+                                        {fileName.startsWith(
+                                            "src/"
+                                        )
+                                            ? "📄"
+                                            : "📋"
+                                        }
+
+                                        {" "}
+
+                                        {fileName}
+
+                                    </button>
+
+                                );
+
+                            })
+                        }
 
                     </div>
-
 
                 </aside>
 
 
-                {/* ------------------------------------------------------
+                {/* ======================================================
                     CENTER PANEL
-                    Code Editor
-                ------------------------------------------------------ */}
+                    CODE EDITOR
+                ====================================================== */}
 
                 <section style={styles.editorPanel}>
 
-
                     <div style={styles.panelHeader}>
-
 
                         {selectedFile ? (
 
                             <span>
-                                📝 {selectedFile}
+
+                                📝{" "}
+                                {getFileName(
+                                    selectedFile
+                                )}
+
                             </span>
 
                         ) : (
 
                             <span>
+
                                 📝 Code Editor
+
                             </span>
 
                         )}
-
 
                     </div>
 
 
                     <div style={styles.editor}>
 
+                        {!selectedFile ? (
 
-                        {selectedFile ? (
-
-                            <>
-
-                                <div style={styles.editorInfo}>
-
-                                    <strong>
-                                        {selectedFile}
-                                    </strong>
-
-                                </div>
-
-
-                                <pre style={styles.code}>
-
-{`// DevPilot AI Code Editor
-
-// This is currently a placeholder.
-
-// Later this area will contain a
-// real code editor where you can:
-
-// • View source code
-// • Edit files
-// • Save changes
-// • Ask AI about selected code
-// • Generate code with AI
-
-`}
-
-                                </pre>
-
-                            </>
-
-                        ) : (
+                            /*
+                            ------------------------------------------------
+                            No file selected
+                            ------------------------------------------------
+                            */
 
                             <div style={styles.emptyEditor}>
 
@@ -313,33 +404,72 @@ const ProjectWorkspace = ({
                                 </h2>
 
                                 <p>
+
                                     Choose a file from the explorer
                                     to open it here.
+
                                 </p>
 
                             </div>
 
+                        ) : (
+
+                            /*
+                            ------------------------------------------------
+                            File selected
+                            ------------------------------------------------
+                            */
+
+                            <>
+
+                                <div
+                                    style={
+                                        styles.editorInfo
+                                    }
+                                >
+
+                                    <strong>
+
+                                        {getFileName(
+                                            selectedFile
+                                        )}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <pre
+                                    style={styles.code}
+                                >
+
+                                    {selectedFile.content ||
+                                        "// This file has no content yet."}
+
+                                </pre>
+
+                            </>
+
                         )}
 
-
                     </div>
-
 
                 </section>
 
 
-                {/* ------------------------------------------------------
+                {/* ======================================================
                     RIGHT PANEL
-                    AI Assistant
-                ------------------------------------------------------ */}
+                    AI ASSISTANT
+                ====================================================== */}
 
                 <aside style={styles.aiPanel}>
-
 
                     <div style={styles.panelHeader}>
 
                         <strong>
+
                             🤖 DevPilot AI
+
                         </strong>
 
                     </div>
@@ -347,33 +477,46 @@ const ProjectWorkspace = ({
 
                     <div style={styles.aiContent}>
 
-
-                        <div style={styles.aiWelcome}>
+                        <div
+                            style={styles.aiWelcome}
+                        >
 
                             <h3>
+
                                 AI Developer Assistant
+
                             </h3>
 
                             <p>
-                                Ask questions about your project,
-                                code, errors, or architecture.
+
+                                Ask questions about your
+                                project, code, errors, or
+                                architecture.
+
                             </p>
 
                         </div>
 
 
-                        <div style={styles.aiPlaceholder}>
+                        <div
+                            style={
+                                styles.aiPlaceholder
+                            }
+                        >
 
                             <p>
+
                                 🤖 AI Assistant
+
                             </p>
 
                             <p>
+
                                 Coming next...
+
                             </p>
 
                         </div>
-
 
                     </div>
 
@@ -385,13 +528,9 @@ const ProjectWorkspace = ({
                     <div style={styles.aiInputArea}>
 
                         <input
-
                             type="text"
-
                             placeholder="Ask DevPilot..."
-
                             style={styles.aiInput}
-
                         />
 
 
@@ -405,12 +544,9 @@ const ProjectWorkspace = ({
 
                     </div>
 
-
                 </aside>
 
-
             </main>
-
 
         </div>
 
@@ -421,22 +557,11 @@ const ProjectWorkspace = ({
 
 /*
 |--------------------------------------------------------------------------
-| Temporary Workspace Styles
-|--------------------------------------------------------------------------
-|
-| These styles are intentionally simple.
-|
-| Later we will replace them with:
-|
-|     Tailwind CSS
-|
-| and eventually create a more professional IDE-like UI.
-|
+| Styles
 |--------------------------------------------------------------------------
 */
 
 const styles = {
-
 
     /*
     Page
@@ -466,23 +591,17 @@ const styles = {
 
         height: "60px",
 
-        padding:
-            "0 20px",
+        padding: "0 20px",
 
-        backgroundColor:
-            "#ffffff",
+        backgroundColor: "#ffffff",
 
-        borderBottom:
-            "1px solid #ddd",
+        borderBottom: "1px solid #ddd",
 
-        display:
-            "flex",
+        display: "flex",
 
-        alignItems:
-            "center",
+        alignItems: "center",
 
-        justifyContent:
-            "space-between",
+        justifyContent: "space-between",
 
     },
 
@@ -493,23 +612,17 @@ const styles = {
 
     backButton: {
 
-        padding:
-            "7px 12px",
+        padding: "7px 12px",
 
-        marginRight:
-            "15px",
+        marginRight: "15px",
 
-        border:
-            "1px solid #ccc",
+        border: "1px solid #ccc",
 
-        borderRadius:
-            "6px",
+        borderRadius: "6px",
 
-        backgroundColor:
-            "#ffffff",
+        backgroundColor: "#ffffff",
 
-        cursor:
-            "pointer",
+        cursor: "pointer",
 
     },
 
@@ -520,11 +633,9 @@ const styles = {
 
     projectName: {
 
-        fontWeight:
-            "bold",
+        fontWeight: "bold",
 
-        fontSize:
-            "18px",
+        fontSize: "18px",
 
     },
 
@@ -535,11 +646,9 @@ const styles = {
 
     headerRight: {
 
-        fontWeight:
-            "bold",
+        fontWeight: "bold",
 
-        color:
-            "#2563eb",
+        color: "#2563eb",
 
     },
 
@@ -552,14 +661,12 @@ const styles = {
 
         flex: 1,
 
-        display:
-            "grid",
+        display: "grid",
 
         gridTemplateColumns:
             "220px 1fr 320px",
 
-        overflow:
-            "hidden",
+        overflow: "hidden",
 
     },
 
@@ -570,17 +677,13 @@ const styles = {
 
     filePanel: {
 
-        backgroundColor:
-            "#ffffff",
+        backgroundColor: "#ffffff",
 
-        borderRight:
-            "1px solid #ddd",
+        borderRight: "1px solid #ddd",
 
-        display:
-            "flex",
+        display: "flex",
 
-        flexDirection:
-            "column",
+        flexDirection: "column",
 
     },
 
@@ -591,14 +694,11 @@ const styles = {
 
     editorPanel: {
 
-        display:
-            "flex",
+        display: "flex",
 
-        flexDirection:
-            "column",
+        flexDirection: "column",
 
-        backgroundColor:
-            "#1e1e1e",
+        backgroundColor: "#1e1e1e",
 
     },
 
@@ -609,17 +709,13 @@ const styles = {
 
     aiPanel: {
 
-        backgroundColor:
-            "#ffffff",
+        backgroundColor: "#ffffff",
 
-        borderLeft:
-            "1px solid #ddd",
+        borderLeft: "1px solid #ddd",
 
-        display:
-            "flex",
+        display: "flex",
 
-        flexDirection:
-            "column",
+        flexDirection: "column",
 
     },
 
@@ -630,23 +726,17 @@ const styles = {
 
     panelHeader: {
 
-        height:
-            "45px",
+        height: "45px",
 
-        padding:
-            "0 15px",
+        padding: "0 15px",
 
-        display:
-            "flex",
+        display: "flex",
 
-        alignItems:
-            "center",
+        alignItems: "center",
 
-        borderBottom:
-            "1px solid #ddd",
+        borderBottom: "1px solid #ddd",
 
-        backgroundColor:
-            "#fafafa",
+        backgroundColor: "#fafafa",
 
     },
 
@@ -657,17 +747,15 @@ const styles = {
 
     fileList: {
 
-        padding:
-            "10px",
+        padding: "10px",
 
-        display:
-            "flex",
+        display: "flex",
 
-        flexDirection:
-            "column",
+        flexDirection: "column",
 
-        gap:
-            "4px",
+        gap: "4px",
+
+        overflowY: "auto",
 
     },
 
@@ -678,23 +766,17 @@ const styles = {
 
     fileButton: {
 
-        padding:
-            "9px 10px",
+        padding: "9px 10px",
 
-        textAlign:
-            "left",
+        textAlign: "left",
 
-        border:
-            "none",
+        border: "none",
 
-        backgroundColor:
-            "transparent",
+        backgroundColor: "transparent",
 
-        cursor:
-            "pointer",
+        cursor: "pointer",
 
-        borderRadius:
-            "5px",
+        borderRadius: "5px",
 
     },
 
@@ -705,26 +787,47 @@ const styles = {
 
     selectedFile: {
 
-        padding:
-            "9px 10px",
+        padding: "9px 10px",
 
-        textAlign:
-            "left",
+        textAlign: "left",
 
-        border:
-            "none",
+        border: "none",
 
-        backgroundColor:
-            "#dbeafe",
+        backgroundColor: "#dbeafe",
 
-        color:
-            "#1d4ed8",
+        color: "#1d4ed8",
 
-        cursor:
-            "pointer",
+        cursor: "pointer",
 
-        borderRadius:
-            "5px",
+        borderRadius: "5px",
+
+    },
+
+
+    /*
+    Loading / Empty Message
+    */
+
+    message: {
+
+        color: "#666",
+
+        padding: "10px",
+
+    },
+
+
+    /*
+    Error
+    */
+
+    error: {
+
+        color: "#dc2626",
+
+        padding: "10px",
+
+        fontSize: "13px",
 
     },
 
@@ -737,11 +840,9 @@ const styles = {
 
         flex: 1,
 
-        overflow:
-            "auto",
+        overflow: "auto",
 
-        color:
-            "#ffffff",
+        color: "#ffffff",
 
     },
 
@@ -752,14 +853,11 @@ const styles = {
 
     editorInfo: {
 
-        padding:
-            "12px 20px",
+        padding: "12px 20px",
 
-        backgroundColor:
-            "#252526",
+        backgroundColor: "#252526",
 
-        borderBottom:
-            "1px solid #333",
+        borderBottom: "1px solid #333",
 
     },
 
@@ -770,20 +868,18 @@ const styles = {
 
     code: {
 
-        padding:
-            "20px",
+        padding: "20px",
 
-        margin:
-            "0",
+        margin: "0",
 
         fontFamily:
             "Consolas, monospace",
 
-        fontSize:
-            "14px",
+        fontSize: "14px",
 
-        lineHeight:
-            "1.6",
+        lineHeight: "1.6",
+
+        whiteSpace: "pre-wrap",
 
     },
 
@@ -794,26 +890,19 @@ const styles = {
 
     emptyEditor: {
 
-        height:
-            "100%",
+        height: "100%",
 
-        display:
-            "flex",
+        display: "flex",
 
-        flexDirection:
-            "column",
+        flexDirection: "column",
 
-        alignItems:
-            "center",
+        alignItems: "center",
 
-        justifyContent:
-            "center",
+        justifyContent: "center",
 
-        color:
-            "#aaa",
+        color: "#aaa",
 
-        textAlign:
-            "center",
+        textAlign: "center",
 
     },
 
@@ -824,14 +913,11 @@ const styles = {
 
     aiContent: {
 
-        flex:
-            "1",
+        flex: 1,
 
-        padding:
-            "15px",
+        padding: "15px",
 
-        overflow:
-            "auto",
+        overflow: "auto",
 
     },
 
@@ -842,17 +928,13 @@ const styles = {
 
     aiWelcome: {
 
-        padding:
-            "15px",
+        padding: "15px",
 
-        border:
-            "1px solid #ddd",
+        border: "1px solid #ddd",
 
-        borderRadius:
-            "8px",
+        borderRadius: "8px",
 
-        backgroundColor:
-            "#f8fafc",
+        backgroundColor: "#f8fafc",
 
     },
 
@@ -863,23 +945,17 @@ const styles = {
 
     aiPlaceholder: {
 
-        marginTop:
-            "20px",
+        marginTop: "20px",
 
-        padding:
-            "20px",
+        padding: "20px",
 
-        textAlign:
-            "center",
+        textAlign: "center",
 
-        border:
-            "1px dashed #bbb",
+        border: "1px dashed #bbb",
 
-        borderRadius:
-            "8px",
+        borderRadius: "8px",
 
-        color:
-            "#666",
+        color: "#666",
 
     },
 
@@ -890,17 +966,13 @@ const styles = {
 
     aiInputArea: {
 
-        padding:
-            "12px",
+        padding: "12px",
 
-        borderTop:
-            "1px solid #ddd",
+        borderTop: "1px solid #ddd",
 
-        display:
-            "flex",
+        display: "flex",
 
-        gap:
-            "8px",
+        gap: "8px",
 
     },
 
@@ -911,20 +983,15 @@ const styles = {
 
     aiInput: {
 
-        flex:
-            "1",
+        flex: 1,
 
-        padding:
-            "10px",
+        padding: "10px",
 
-        border:
-            "1px solid #ccc",
+        border: "1px solid #ccc",
 
-        borderRadius:
-            "6px",
+        borderRadius: "6px",
 
-        outline:
-            "none",
+        outline: "none",
 
     },
 
@@ -935,23 +1002,17 @@ const styles = {
 
     askButton: {
 
-        padding:
-            "10px 14px",
+        padding: "10px 14px",
 
-        border:
-            "none",
+        border: "none",
 
-        borderRadius:
-            "6px",
+        borderRadius: "6px",
 
-        backgroundColor:
-            "#2563eb",
+        backgroundColor: "#2563eb",
 
-        color:
-            "#ffffff",
+        color: "#ffffff",
 
-        cursor:
-            "pointer",
+        cursor: "pointer",
 
     },
 

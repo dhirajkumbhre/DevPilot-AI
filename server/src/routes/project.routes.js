@@ -41,6 +41,7 @@ import {
     getProjectById,
     updateProject,
     deleteProject,
+    getProjectFiles,
 } from "../controllers/project.controller.js";
 
 
@@ -102,6 +103,29 @@ router.get(
     "/:id",
     authenticateUser,
     getProjectById
+);
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| GET PROJECT FILES
+|--------------------------------------------------------------------------
+|
+| GET /api/projects/:id/files
+|
+| Returns all files belonging to the project.
+|
+| Authentication is required.
+|
+|--------------------------------------------------------------------------
+*/
+
+router.get(
+    "/:id/files",
+    authenticateUser,
+    getProjectFiles
 );
 
 

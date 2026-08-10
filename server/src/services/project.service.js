@@ -20,8 +20,9 @@
 |--------------------------------------------------------------------------
 */
 
-import Project from "../models/project.model.js";
 
+import Project from "../models/project.model.js";
+import ProjectFile from "../models/projectFile.model.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -181,4 +182,146 @@ export const deleteProjectService = async ({
     }
 
     return project;
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Get Project Files
+|--------------------------------------------------------------------------
+|
+| Returns all files belonging to a project.
+|
+| IMPORTANT:
+|
+| We first verify that the project belongs to the authenticated user.
+|
+| This prevents:
+|
+| User A
+|   ↓
+| manually changes project ID
+|   ↓
+| accesses User B's files
+|
+|--------------------------------------------------------------------------
+*/
+
+export const getProjectFilesService = async ({
+    projectId,
+    userId,
+}) => {
+
+    /*
+    ----------------------------------------------------------------------
+    | Step 1: Verify Project Ownership
+    ----------------------------------------------------------------------
+    */
+
+    const project = await Project.findOne({
+        _id: projectId,
+        owner: userId,
+    });
+
+    /*
+    If the project doesn't belong to the user,
+    don't return any files.
+    */
+
+    if (!project) {
+
+        throw new Error(
+            "Project not found"
+        );
+    }
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Step 2: Find Files
+    ----------------------------------------------------------------------
+    |
+    | Only return files belonging to this project.
+    |
+    */
+
+    let files = await ProjectFile.find({
+        project: projectId,
+    })
+        .sort({ path: 1 });
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Step 3: Create Starter Files
+    ----------------------------------------------------------------------
+    |
+    | Your existing project was created before we introduced
+    | ProjectFile.
+    |
+    | Therefore, an old project may have ZERO files.
+    |
+    | To make the existing project immediately usable,
+    | we create a few starter files the first time they are requested.
+    |
+    ----------------------------------------------------------------------
+    */
+
+    if (files.length === 0) {
+
+        const starterFiles = [
+            {
+                project: projectId,
+                path: "README.md",
+                content:
+                    "# DevPilot AI\n\nAI Powered Developer Assistant",
+            },
+
+            {
+                project: projectId,
+                path: "package.json",
+                content:
+                    '{\n  "name": "my-project",\n  "version": "1.0.0"\n}',
+            },
+
+            {
+                project: projectId,
+                path: "src/App.jsx",
+                content:
+                    'import React from "react";\n\nfunction App() {\n    return <h1>Hello DevPilot AI</h1>;\n}\n\nexport default App;',
+            },
+
+            {
+                project: projectId,
+                path: "src/main.jsx",
+                content:
+                    'import React from "react";\nimport ReactDOM from "react-dom/client";\nimport App from "./App.jsx";\n\nReactDOM.createRoot(document.getElementById("root")).render(\n    <App />\n);',
+            },
+
+            {
+                project: projectId,
+                path: "src/components",
+                content:
+                    "// Components folder",
+            },
+        ];
+
+
+        /*
+        Insert the starter files into MongoDB.
+        */
+
+        files = await ProjectFile.insertMany(
+            starterFiles
+        );
+    }
+
+
+    /*
+    ------------a----------------------------------------------------------
+    | Return Files
+    ----------------------------------------------------------------------
+    */
+
+    return files;
 };

@@ -25,6 +25,7 @@ import {
     getProjectByIdService,
     updateProjectService,
     deleteProjectService,
+    getProjectFilesService,
 } from "../services/project.service.js";
 
 
@@ -287,6 +288,86 @@ export const deleteProject = async (req, res) => {
 
         return res.status(404).json({
             success: false,
+            message: error.message,
+        });
+    }
+};
+/*
+|--------------------------------------------------------------------------
+| Get Project Files
+|--------------------------------------------------------------------------
+|
+| GET /api/projects/:id/files
+|
+| Returns the files belonging to the authenticated user's project.
+|
+|--------------------------------------------------------------------------
+*/
+
+export const getProjectFiles = async (req, res) => {
+
+    try {
+
+        /*
+        --------------------------------------------------------------
+        | Get Project ID
+        --------------------------------------------------------------
+        |
+        | Example:
+        |
+        | /api/projects/64abc123/files
+        |
+        | req.params.id
+        |
+        --------------------------------------------------------------
+        */
+
+        const { id } = req.params;
+
+
+        /*
+        --------------------------------------------------------------
+        | Get Files From Service
+        --------------------------------------------------------------
+        |
+        | The service also checks project ownership.
+        |
+        --------------------------------------------------------------
+        */
+
+        const files = await getProjectFilesService({
+
+            projectId: id,
+
+            userId: req.user.userId,
+        });
+
+
+        /*
+        --------------------------------------------------------------
+        | Send Successful Response
+        --------------------------------------------------------------
+        */
+
+        return res.status(200).json({
+
+            success: true,
+
+            files,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Get project files error:",
+            error.message
+        );
+
+
+        return res.status(404).json({
+
+            success: false,
+
             message: error.message,
         });
     }

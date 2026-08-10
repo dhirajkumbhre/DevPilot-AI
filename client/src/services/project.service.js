@@ -353,3 +353,84 @@ export const deleteProject = async (projectId) => {
 
     return data;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Get Project Files
+|--------------------------------------------------------------------------
+|
+| GET /api/projects/:id/files
+|
+| This function asks the backend for all files belonging
+| to the currently selected project.
+|
+| Flow:
+|
+| ProjectWorkspace
+|      ↓
+| getProjectFiles()
+|      ↓
+| Express API
+|      ↓
+| MongoDB
+|
+|--------------------------------------------------------------------------
+*/
+
+export const getProjectFiles = async (projectId) => {
+
+    /*
+    ----------------------------------------------------------------------
+    | Send request to backend
+    ----------------------------------------------------------------------
+    |
+    | The project ID tells the backend which project's files we need.
+    |
+    */
+
+    const response = await fetch(
+        `${API_URL}/${projectId}/files`,
+        {
+            method: "GET",
+
+            /*
+            Include the JWT because the backend protects
+            project files with authentication.
+            */
+
+            headers: getAuthHeaders(),
+        }
+    );
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Convert JSON response
+    ----------------------------------------------------------------------
+    */
+
+    const data = await response.json();
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Handle backend errors
+    ----------------------------------------------------------------------
+    */
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.message || "Failed to fetch project files"
+        );
+    }
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Return files
+    ----------------------------------------------------------------------
+    */
+
+    return data.files || [];
+};
