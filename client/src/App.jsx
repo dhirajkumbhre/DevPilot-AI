@@ -4,7 +4,6 @@
 | Project     : DevPilot AI
 |--------------------------------------------------------------------------
 |
-| Purpose:
 | Root component of the React application.
 |
 | Responsibilities:
@@ -12,59 +11,40 @@
 | 1. Check backend health.
 | 2. Show loading state.
 | 3. Show backend error state.
-| 4. Determine whether the user is authenticated.
-| 5. Show Login or Dashboard accordingly.
+| 4. Decide between Login, Register and Dashboard.
 |
 |--------------------------------------------------------------------------
 */
 
 import { useEffect, useState } from "react";
 
-
-/*
-|--------------------------------------------------------------------------
-| Backend Health Service
-|--------------------------------------------------------------------------
-*/
-
-import { getBackendHealth } from "./services/health.service";
-
-
-/*
-|--------------------------------------------------------------------------
-| Authentication Context
-|--------------------------------------------------------------------------
-*/
+import { getBackendHealth } from "./services/health.service.js";
 
 import { useAuth } from "./context/AuthContext.jsx";
 
-
-/*
-|--------------------------------------------------------------------------
-| Application Pages
-|--------------------------------------------------------------------------
-*/
-
 import Login from "./pages/Login.jsx";
-
+import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
-
-/*
-|--------------------------------------------------------------------------
-| App Component
-|--------------------------------------------------------------------------
-*/
 
 function App() {
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication State
+    | Authentication
     |--------------------------------------------------------------------------
     */
 
     const { token } = useAuth();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Register / Login Switch
+    |--------------------------------------------------------------------------
+    */
+
+    const [showRegister, setShowRegister] = useState(false);
 
 
     /*
@@ -75,21 +55,7 @@ function App() {
 
     const [health, setHealth] = useState(null);
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Loading
-    |--------------------------------------------------------------------------
-    */
-
     const [loading, setLoading] = useState(true);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Error
-    |--------------------------------------------------------------------------
-    */
 
     const [error, setError] = useState("");
 
@@ -102,12 +68,11 @@ function App() {
 
     useEffect(() => {
 
-        async function fetchBackendHealth() {
+        const checkBackend = async () => {
 
             try {
 
-                const response =
-                    await getBackendHealth();
+                const response = await getBackendHealth();
 
                 setHealth(response);
 
@@ -128,69 +93,39 @@ function App() {
 
             }
 
-        }
+        };
 
 
-        fetchBackendHealth();
+        checkBackend();
 
     }, []);
 
 
     /*
     |--------------------------------------------------------------------------
-    | Loading Screen
+    | Loading
     |--------------------------------------------------------------------------
     */
 
     if (loading) {
 
         return (
+            <div style={styles.centerPage}>
 
-            <div style={styles.loadingPage}>
-
-                <div
-                    style={
-                        styles.loadingLogo
-                    }
-                >
+                <div style={styles.logo}>
                     🚀
                 </div>
 
-                <h2
-                    style={
-                        styles.loadingTitle
-                    }
-                >
+                <h1 style={styles.title}>
                     DevPilot AI
-                </h2>
+                </h1>
 
-                <p
-                    style={
-                        styles.loadingText
-                    }
-                >
-                    Connecting to your
-                    developer workspace...
+                <p style={styles.muted}>
+                    Connecting to your developer workspace...
                 </p>
 
-                <div
-                    style={
-                        styles.loadingIndicator
-                    }
-                >
-                    <span
-                        style={
-                            styles.loadingDot
-                        }
-                    />
-
-                    Connecting to backend
-                </div>
-
             </div>
-
         );
-
     }
 
 
@@ -203,118 +138,181 @@ function App() {
     if (error) {
 
         return (
+            <div style={styles.centerPage}>
 
-            <div style={styles.errorPage}>
-
-                <div
-                    style={
-                        styles.errorCard
-                    }
-                >
-
-                    <div
-                        style={
-                            styles.errorLogo
-                        }
-                    >
-                        🚀
-                    </div>
-
-
-                    <h1
-                        style={
-                            styles.errorTitle
-                        }
-                    >
-                        DevPilot AI
-                    </h1>
-
-
-                    <div
-                        style={
-                            styles.offlineBadge
-                        }
-                    >
-                        <span>
-                            ●
-                        </span>
-
-                        Backend Offline
-                    </div>
-
-
-                    <p
-                        style={
-                            styles.errorMessage
-                        }
-                    >
-                        {error}
-                    </p>
-
-
-                    <p
-                        style={
-                            styles.errorHint
-                        }
-                    >
-                        Make sure your Express
-                        server is running.
-                    </p>
-
+                <div style={styles.logo}>
+                    🚀
                 </div>
 
+                <h1 style={styles.title}>
+                    DevPilot AI
+                </h1>
+
+                <div style={styles.errorBadge}>
+                    ● Backend Offline
+                </div>
+
+                <p style={styles.muted}>
+                    {error}
+                </p>
+
+                <p style={styles.small}>
+                    Make sure your Express server is running.
+                </p>
+
             </div>
-
         );
-
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Authenticated Application
-    |--------------------------------------------------------------------------
-    |
-    | If token exists:
-    |
-    |     Dashboard
-    |
-    | Otherwise:
-    |
-    |     Login
-    |
+    | Authenticated User
     |--------------------------------------------------------------------------
     */
 
     if (token) {
 
-        return (
-
-            <Dashboard />
-
-        );
-
+        return <Dashboard />;
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Login
-    |--------------------------------------------------------------------------
-    |
-    | Pass backend health information to Login.
-    |
+    | Authentication Pages
     |--------------------------------------------------------------------------
     */
 
     return (
 
-        <Login
-            health={health}
-        />
+        <div style={styles.page}>
 
+            {/* ----------------------------------------------------------
+                Top Header
+            ---------------------------------------------------------- */}
+
+            <header style={styles.topBar}>
+
+                <div style={styles.brand}>
+
+                    <div style={styles.smallLogo}>
+                        🚀
+                    </div>
+
+                    <div>
+
+                        <div style={styles.brandName}>
+                            DevPilot AI
+                        </div>
+
+                        <div style={styles.brandSubtitle}>
+                            AI Developer Workspace
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div style={styles.status}>
+
+                    <span style={styles.statusDot} />
+
+                    System Operational
+
+                </div>
+
+            </header>
+
+
+            {/* ----------------------------------------------------------
+                Main Authentication Area
+            ---------------------------------------------------------- */}
+
+            <main style={styles.main}>
+
+                <section style={styles.hero}>
+
+                    <div style={styles.heroLogo}>
+                        🚀
+                    </div>
+
+                    <h1 style={styles.heroTitle}>
+                        DevPilot AI
+                    </h1>
+
+                    <p style={styles.heroSubtitle}>
+                        Your AI-powered developer workspace
+                    </p>
+
+
+                    <div style={styles.features}>
+
+                        <span style={styles.feature}>
+                            ✦ AI Assistant
+                        </span>
+
+                        <span style={styles.feature}>
+                            ◈ Project Workspace
+                        </span>
+
+                        <span style={styles.feature}>
+                            ✓ Developer Tools
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+                {/* ------------------------------------------------------
+                    Login
+                ------------------------------------------------------ */}
+
+                {!showRegister && (
+
+                    <Login
+                        onSwitchToRegister={() =>
+                            setShowRegister(true)
+                        }
+                    />
+
+                )}
+
+
+                {/* ------------------------------------------------------
+                    Register
+                ------------------------------------------------------ */}
+
+                {showRegister && (
+
+                    <Register
+                        onSwitchToLogin={() =>
+                            setShowRegister(false)
+                        }
+                    />
+
+                )}
+
+
+                <footer style={styles.footer}>
+
+                    <span>DevPilot AI</span>
+
+                    <span>•</span>
+
+                    <span>Developer workspace</span>
+
+                    <span>•</span>
+
+                    <span>v1.0</span>
+
+                </footer>
+
+            </main>
+
+        </div>
     );
-
 }
 
 
@@ -326,259 +324,216 @@ function App() {
 
 const styles = {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Loading
-    |--------------------------------------------------------------------------
-    */
-
-    loadingPage: {
-
+    page: {
         minHeight: "100vh",
-
         width: "100%",
-
-        display: "flex",
-
-        flexDirection: "column",
-
-        alignItems: "center",
-
-        justifyContent: "center",
-
         boxSizing: "border-box",
-
-        padding: "30px",
-
+        padding: "28px 24px",
         background:
-            "linear-gradient(135deg, #070b14 0%, #0b1120 50%, #111a30 100%)",
-
-        color: "#ffffff",
-
+            "radial-gradient(circle at 50% -10%, #1d2a4a 0%, #0b1020 38%, #060a12 75%)",
+        color: "#e8edf7",
         fontFamily:
             "Inter, Arial, Helvetica, sans-serif",
-
     },
 
 
-    loadingLogo: {
-
-        width: "62px",
-
-        height: "62px",
-
+    centerPage: {
+        minHeight: "100vh",
         display: "flex",
-
+        flexDirection: "column",
         alignItems: "center",
-
         justifyContent: "center",
+        background: "#070b14",
+        color: "#ffffff",
+        fontFamily:
+            "Inter, Arial, Helvetica, sans-serif",
+    },
 
-        borderRadius: "17px",
 
-        marginBottom: "18px",
+    logo: {
+        width: "60px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "16px",
+        background:
+            "linear-gradient(135deg, #4f7fff, #7659e8)",
+        fontSize: "28px",
+        marginBottom: "16px",
+    },
 
+
+    title: {
+        margin: 0,
+        fontSize: "26px",
+    },
+
+
+    muted: {
+        color: "#7d899d",
+        fontSize: "13px",
+    },
+
+
+    small: {
+        color: "#536076",
+        fontSize: "11px",
+    },
+
+
+    errorBadge: {
+        marginTop: "15px",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        border: "1px solid #65313b",
+        background: "rgba(104, 37, 48, 0.25)",
+        color: "#ff9aa7",
+        fontSize: "12px",
+        fontWeight: "700",
+    },
+
+
+    topBar: {
+        width: "100%",
+        maxWidth: "1100px",
+        margin: "0 auto",
+        padding: "14px 18px",
+        boxSizing: "border-box",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        border: "1px solid #1d293b",
+        borderRadius: "11px",
+        background: "rgba(12, 19, 32, 0.72)",
+        backdropFilter: "blur(12px)",
+    },
+
+
+    brand: {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+    },
+
+
+    smallLogo: {
+        width: "36px",
+        height: "36px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "9px",
         background:
             "linear-gradient(135deg, #4f7df3, #7058e8)",
-
-        fontSize: "29px",
-
-        boxShadow:
-            "0 12px 35px rgba(79, 125, 243, 0.28)",
-
+        fontSize: "18px",
     },
 
 
-    loadingTitle: {
-
-        margin: "0 0 7px",
-
-        fontSize: "24px",
-
+    brandName: {
+        fontSize: "13px",
         fontWeight: "800",
-
     },
 
 
-    loadingText: {
-
-        margin: "0 0 20px",
-
-        color: "#7d899d",
-
-        fontSize: "12px",
-
+    brandSubtitle: {
+        marginTop: "2px",
+        color: "#65738a",
+        fontSize: "9px",
     },
 
 
-    loadingIndicator: {
-
+    status: {
         display: "flex",
-
         alignItems: "center",
-
-        gap: "8px",
-
-        padding:
-            "8px 12px",
-
-        border:
-            "1px solid #202c40",
-
-        borderRadius: "8px",
-
-        color: "#8290a5",
-
-        background:
-            "rgba(17, 25, 40, 0.8)",
-
-        fontSize: "10px",
-
-    },
-
-
-    loadingDot: {
-
-        width: "7px",
-
-        height: "7px",
-
-        borderRadius: "50%",
-
-        background: "#e5a83b",
-
-        boxShadow:
-            "0 0 10px rgba(229, 168, 59, 0.5)",
-
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Error Page
-    |--------------------------------------------------------------------------
-    */
-
-    errorPage: {
-
-        minHeight: "100vh",
-
-        width: "100%",
-
-        display: "flex",
-
-        alignItems: "center",
-
-        justifyContent: "center",
-
-        padding: "30px",
-
-        boxSizing: "border-box",
-
-        background:
-            "linear-gradient(135deg, #070b14 0%, #0b1120 50%, #111a30 100%)",
-
-        fontFamily:
-            "Inter, Arial, Helvetica, sans-serif",
-
-    },
-
-
-    errorCard: {
-
-        width: "100%",
-
-        maxWidth: "390px",
-
-        padding: "35px",
-
-        boxSizing: "border-box",
-
-        textAlign: "center",
-
-        border:
-            "1px solid #28354a",
-
-        borderRadius: "15px",
-
-        background:
-            "#0f1727",
-
-        boxShadow:
-            "0 25px 70px rgba(0, 0, 0, 0.35)",
-
-    },
-
-
-    errorLogo: {
-
-        fontSize: "34px",
-
-        marginBottom: "10px",
-
-    },
-
-
-    errorTitle: {
-
-        margin: "0 0 18px",
-
-        color: "#f0f4fa",
-
-        fontSize: "24px",
-
-    },
-
-
-    offlineBadge: {
-
-        display: "inline-flex",
-
-        alignItems: "center",
-
         gap: "7px",
-
-        padding:
-            "7px 11px",
-
-        border:
-            "1px solid #65313b",
-
+        padding: "7px 10px",
+        border: "1px solid #1d4938",
         borderRadius: "7px",
-
-        background:
-            "rgba(104, 37, 48, 0.25)",
-
-        color: "#ff9aa7",
-
-        fontSize: "11px",
-
+        background: "rgba(21, 74, 51, 0.15)",
+        color: "#65c89a",
+        fontSize: "9px",
         fontWeight: "700",
-
     },
 
 
-    errorMessage: {
-
-        margin:
-            "20px 0 7px",
-
-        color: "#c5ccda",
-
-        fontSize: "12px",
-
+    statusDot: {
+        width: "6px",
+        height: "6px",
+        borderRadius: "50%",
+        background: "#45d18c",
     },
 
 
-    errorHint: {
-
-        margin: "0",
-
-        color: "#69768b",
-
-        fontSize: "10px",
-
+    main: {
+        width: "100%",
+        maxWidth: "440px",
+        margin: "55px auto 0",
     },
 
+
+    hero: {
+        textAlign: "center",
+        marginBottom: "28px",
+    },
+
+
+    heroLogo: {
+        width: "60px",
+        height: "60px",
+        margin: "0 auto 14px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "16px",
+        background:
+            "linear-gradient(135deg, #4f7fff, #7659e8)",
+        boxShadow:
+            "0 12px 35px rgba(78, 112, 235, 0.28)",
+        fontSize: "28px",
+    },
+
+
+    heroTitle: {
+        margin: 0,
+        fontSize: "29px",
+        fontWeight: "800",
+    },
+
+
+    heroSubtitle: {
+        margin: "7px 0 15px",
+        color: "#8793a8",
+        fontSize: "13px",
+    },
+
+
+    features: {
+        display: "flex",
+        justifyContent: "center",
+        flexWrap: "wrap",
+        gap: "7px",
+    },
+
+
+    feature: {
+        padding: "5px 8px",
+        border: "1px solid #202c40",
+        borderRadius: "6px",
+        background: "rgba(17, 26, 42, 0.65)",
+        color: "#78869b",
+        fontSize: "9px",
+    },
+
+
+    footer: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "7px",
+        marginTop: "18px",
+        color: "#536076",
+        fontSize: "9px",
+    },
 };
 
 

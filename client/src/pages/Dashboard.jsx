@@ -1,68 +1,6 @@
-/*
-|--------------------------------------------------------------------------
-| File        : Dashboard.jsx
-| Project     : DevPilot AI
-|--------------------------------------------------------------------------
-|
-| Purpose:
-| --------
-| Main dashboard shown after successful login.
-|
-| Responsibilities:
-|
-| 1. Display logged-in user.
-| 2. Load user's projects.
-| 3. Create projects.
-| 4. Update projects.
-| 5. Delete projects.
-| 6. Open an individual project.
-| 7. Logout.
-|
-|--------------------------------------------------------------------------
-|
-| Project flow:
-|
-| Dashboard
-|     ↓
-| Click "Open Project"
-|     ↓
-| selectedProjectId
-|     ↓
-| ProjectDetails.jsx
-|     ↓
-| project.service.js
-|     ↓
-| Express API
-|     ↓
-| MongoDB
-|
-|--------------------------------------------------------------------------
-*/
-
 import { useEffect, useState } from "react";
 
-
-/*
-|--------------------------------------------------------------------------
-| Authentication Context
-|--------------------------------------------------------------------------
-*/
-
 import { useAuth } from "../context/AuthContext.jsx";
-
-
-/*
-|--------------------------------------------------------------------------
-| Project API Services
-|--------------------------------------------------------------------------
-|
-| These functions contain our fetch() requests.
-|
-| Dashboard handles UI.
-| project.service.js handles API communication.
-|
-|--------------------------------------------------------------------------
-*/
 
 import {
     getProjects,
@@ -71,42 +9,12 @@ import {
     deleteProject,
 } from "../services/project.service.js";
 
-
-/*
-|--------------------------------------------------------------------------
-| Project Details Page
-|--------------------------------------------------------------------------
-|
-| This component displays one selected project.
-|
-|--------------------------------------------------------------------------
-*/
-
 import ProjectDetails from "./ProjectDetails.jsx";
 
+import "../styles/dashboard.css";
 
-/*
-|--------------------------------------------------------------------------
-| Dashboard Component
-|--------------------------------------------------------------------------
-*/
 
 const Dashboard = () => {
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication
-    |--------------------------------------------------------------------------
-    |
-    | user:
-    |     Information about the logged-in user.
-    |
-    | logout:
-    |     Removes the user's authentication.
-    |
-    |--------------------------------------------------------------------------
-    */
 
     const {
         user,
@@ -114,58 +22,15 @@ const Dashboard = () => {
     } = useAuth();
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Projects State
-    |--------------------------------------------------------------------------
-    |
-    | Stores all projects belonging to the logged-in user.
-    |
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // PROJECT STATE
+    // ---------------------------------------------------------
 
     const [projects, setProjects] = useState([]);
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Loading State
-    |--------------------------------------------------------------------------
-    |
-    | Used while loading projects from the backend.
-    |
-    |--------------------------------------------------------------------------
-    */
-
     const [loading, setLoading] = useState(true);
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Error State
-    |--------------------------------------------------------------------------
-    |
-    | Stores errors that occur during API requests.
-    |
-    |--------------------------------------------------------------------------
-    */
-
     const [error, setError] = useState("");
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Selected Project
-    |--------------------------------------------------------------------------
-    |
-    | null:
-    |     → Show Dashboard
-    |
-    | project ID:
-    |     → Show ProjectDetails
-    |
-    |--------------------------------------------------------------------------
-    */
 
     const [
         selectedProjectId,
@@ -173,39 +38,29 @@ const Dashboard = () => {
     ] = useState(null);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Create Project Form
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // CREATE PROJECT
+    // ---------------------------------------------------------
 
     const [name, setName] = useState("");
 
     const [description, setDescription] = useState("");
 
+    const [showCreateForm, setShowCreateForm] =
+        useState(false);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Edit Project State
-    |--------------------------------------------------------------------------
-    |
-    | editingProjectId tells us which project is currently
-    | being edited.
-    |
-    |--------------------------------------------------------------------------
-    */
+    const [creating, setCreating] =
+        useState(false);
+
+
+    // ---------------------------------------------------------
+    // EDIT PROJECT
+    // ---------------------------------------------------------
 
     const [
         editingProjectId,
         setEditingProjectId
     ] = useState(null);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Edit Form State
-    |--------------------------------------------------------------------------
-    */
 
     const [editName, setEditName] = useState("");
 
@@ -215,89 +70,37 @@ const Dashboard = () => {
     ] = useState("");
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Load Projects
-    |--------------------------------------------------------------------------
-    |
-    | React's useEffect callback itself should NOT be async.
-    |
-    | Therefore we create an async function inside useEffect.
-    |
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // LOAD PROJECTS
+    // ---------------------------------------------------------
 
     useEffect(() => {
-
-
-        /*
-        ----------------------------------------------------------------------
-        | Async Project Loader
-        ----------------------------------------------------------------------
-        */
 
         const loadProjects = async () => {
 
             try {
 
-
-                /*
-                Show loading state.
-                */
-
                 setLoading(true);
-
-
-                /*
-                Clear previous errors.
-                */
 
                 setError("");
 
-
-                /*
-                Get projects from backend.
-                */
-
                 const data = await getProjects();
-
-
-                /*
-                Save projects into React state.
-                */
 
                 setProjects(data);
 
-
             } catch (err) {
-
-
-                /*
-                Log the real error for development.
-                */
 
                 console.error(
                     "Failed to fetch projects:",
                     err
                 );
 
-
-                /*
-                Display friendly error.
-                */
-
                 setError(
                     err.message ||
-                    "Failed to load projects"
+                    "Failed to load projects."
                 );
 
-
             } finally {
-
-
-                /*
-                Loading is finished.
-                */
 
                 setLoading(false);
 
@@ -306,41 +109,19 @@ const Dashboard = () => {
         };
 
 
-        /*
-        Execute the async function.
-        */
-
         loadProjects();
-
 
     }, []);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Create Project
-    |--------------------------------------------------------------------------
-    |
-    | Sends:
-    |
-    | POST /api/projects
-    |
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // CREATE PROJECT
+    // ---------------------------------------------------------
 
     const handleCreateProject = async (event) => {
 
-
-        /*
-        Prevent browser from refreshing the page.
-        */
-
         event.preventDefault();
 
-
-        /*
-        Basic validation.
-        */
 
         if (!name.trim()) {
 
@@ -354,13 +135,10 @@ const Dashboard = () => {
 
         try {
 
+            setCreating(true);
 
             setError("");
 
-
-            /*
-            Send project information to backend.
-            */
 
             await createProject({
 
@@ -372,18 +150,12 @@ const Dashboard = () => {
             });
 
 
-            /*
-            Clear form after successful creation.
-            */
-
             setName("");
 
             setDescription("");
 
+            setShowCreateForm(false);
 
-            /*
-            Get fresh project list from MongoDB.
-            */
 
             const updatedProjects =
                 await getProjects();
@@ -394,123 +166,73 @@ const Dashboard = () => {
 
         } catch (err) {
 
-
             console.error(
                 "Create project failed:",
                 err
             );
 
-
             setError(
                 err.message ||
-                "Failed to create project"
+                "Failed to create project."
             );
+
+        } finally {
+
+            setCreating(false);
 
         }
 
     };
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Start Editing Project
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // START EDIT
+    // ---------------------------------------------------------
 
     const handleStartEdit = (project) => {
-
-
-        /*
-        Remember which project is being edited.
-        */
 
         setEditingProjectId(
             project._id
         );
 
-
-        /*
-        Put existing project data into edit form.
-        */
-
         setEditName(
             project.name
         );
-
 
         setEditDescription(
             project.description || ""
         );
 
-
-        /*
-        Clear old errors.
-        */
-
         setError("");
 
     };
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cancel Editing
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // CANCEL EDIT
+    // ---------------------------------------------------------
 
     const handleCancelEdit = () => {
 
-
-        /*
-        Leave edit mode.
-        */
-
         setEditingProjectId(null);
-
-
-        /*
-        Clear edit form.
-        */
 
         setEditName("");
 
         setEditDescription("");
 
-
-        /*
-        Clear errors.
-        */
-
         setError("");
 
     };
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Update Project
-    |--------------------------------------------------------------------------
-    |
-    | Sends:
-    |
-    | PUT /api/projects/:id
-    |
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // UPDATE PROJECT
+    // ---------------------------------------------------------
 
     const handleUpdateProject = async (event) => {
 
-
-        /*
-        Prevent page refresh.
-        */
-
         event.preventDefault();
 
-
-        /*
-        Project name is required.
-        */
 
         if (!editName.trim()) {
 
@@ -524,13 +246,8 @@ const Dashboard = () => {
 
         try {
 
-
             setError("");
 
-
-            /*
-            Update project in backend.
-            */
 
             await updateProject(
 
@@ -547,16 +264,8 @@ const Dashboard = () => {
             );
 
 
-            /*
-            Exit edit mode.
-            */
-
             handleCancelEdit();
 
-
-            /*
-            Reload project list.
-            */
 
             const updatedProjects =
                 await getProjects();
@@ -567,16 +276,14 @@ const Dashboard = () => {
 
         } catch (err) {
 
-
             console.error(
                 "Update project failed:",
                 err
             );
 
-
             setError(
                 err.message ||
-                "Failed to update project"
+                "Failed to update project."
             );
 
         }
@@ -584,25 +291,13 @@ const Dashboard = () => {
     };
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Delete Project
-    |--------------------------------------------------------------------------
-    |
-    | Sends:
-    |
-    | DELETE /api/projects/:id
-    |
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // DELETE PROJECT
+    // ---------------------------------------------------------
 
-    const handleDeleteProject = async (projectId) => {
-
-
-        /*
-        Ask for confirmation before permanently
-        deleting the project.
-        */
+    const handleDeleteProject = async (
+        projectId
+    ) => {
 
         const confirmed =
             window.confirm(
@@ -610,38 +305,25 @@ const Dashboard = () => {
             );
 
 
-        /*
-        User cancelled deletion.
-        */
-
         if (!confirmed) {
 
             return;
+
         }
 
 
         try {
 
-
             setError("");
 
-
-            /*
-            Delete project from backend.
-            */
 
             await deleteProject(
                 projectId
             );
 
 
-            /*
-            Remove project from the current UI state.
-            */
-
             setProjects(
                 (currentProjects) =>
-
                     currentProjects.filter(
                         (project) =>
                             project._id !==
@@ -652,16 +334,14 @@ const Dashboard = () => {
 
         } catch (err) {
 
-
             console.error(
                 "Delete project failed:",
                 err
             );
 
-
             setError(
                 err.message ||
-                "Failed to delete project"
+                "Failed to delete project."
             );
 
         }
@@ -669,70 +349,21 @@ const Dashboard = () => {
     };
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Logout
-    |--------------------------------------------------------------------------
-    */
-
-    const handleLogout = () => {
-
-        logout();
-
-    };
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Project Details View
-    |--------------------------------------------------------------------------
-    |
-    | IMPORTANT:
-    |
-    | If selectedProjectId exists,
-    | we show ProjectDetails instead of Dashboard.
-    |
-    | Example:
-    |
-    | selectedProjectId = "65abc123"
-    |
-    |          ↓
-    |
-    | <ProjectDetails projectId="65abc123" />
-    |
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // OPEN PROJECT
+    // ---------------------------------------------------------
 
     if (selectedProjectId) {
-
 
         return (
 
             <ProjectDetails
 
-                /*
-                Send selected project ID.
-                */
-
                 projectId={
                     selectedProjectId
                 }
 
-
-                /*
-                Back button callback.
-                */
-
                 onBack={() => {
-
-                    /*
-                    Clear selected project.
-
-                    null means:
-                    "No project is currently open."
-
-                    Dashboard will appear again.
-                    */
 
                     setSelectedProjectId(
                         null
@@ -747,35 +378,28 @@ const Dashboard = () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Loading Screen
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // LOADING
+    // ---------------------------------------------------------
 
     if (loading) {
 
-
         return (
 
-            <div
-                style={
-                    styles.page
-                }
-            >
+            <div className="dashboard-page">
 
-                <div
-                    style={
-                        styles.card
-                    }
-                >
+                <div className="loading-screen">
+
+                    <div className="loading-logo">
+                        🚀
+                    </div>
 
                     <h2>
-                        Loading your projects...
+                        Loading your workspace
                     </h2>
 
                     <p>
-                        Connecting to DevPilot AI backend.
+                        Connecting to your projects...
                     </p>
 
                 </div>
@@ -787,640 +411,713 @@ const Dashboard = () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Main Dashboard
-    |--------------------------------------------------------------------------
-    */
+    // ---------------------------------------------------------
+    // DASHBOARD
+    // ---------------------------------------------------------
 
     return (
 
-        <div
-            style={
-                styles.page
-            }
-        >
+        <div className="dashboard-page">
 
 
-            {/* ----------------------------------------------------------
-                Header
-            ---------------------------------------------------------- */}
+            {/* =================================================
+                NAVBAR
+            ================================================= */}
 
-            <div
-                style={
-                    styles.header
-                }
-            >
+            <header className="dashboard-navbar">
 
-                <div>
+                <div className="nav-brand">
 
-                    <h1>
-                        🚀 DevPilot AI
-                    </h1>
-
-                    <p>
-                        AI Powered Developer Assistant
-                    </p>
-
-                </div>
-
-
-                <button
-
-                    onClick={
-                        handleLogout
-                    }
-
-                    style={
-                        styles.logoutButton
-                    }
-
-                >
-                    Logout
-
-                </button>
-
-            </div>
-
-
-            {/* ----------------------------------------------------------
-                Welcome
-            ---------------------------------------------------------- */}
-
-            <div
-                style={
-                    styles.card
-                }
-            >
-
-                <h2>
-
-                    Welcome,{" "}
-
-                    {
-                        user?.name ||
-                        "Developer"
-                    }
-
-                    {" "}👋
-
-                </h2>
-
-
-                <p>
-                    Your developer workspace is ready.
-                </p>
-
-            </div>
-
-
-            {/* ----------------------------------------------------------
-                Authentication
-            ---------------------------------------------------------- */}
-
-            <div
-                style={
-                    styles.card
-                }
-            >
-
-                <h2>
-                    🔐 Authentication
-                </h2>
-
-
-                <p>
-                    🟢 You are authenticated.
-                </p>
-
-
-                <p>
-                    JWT status: Available
-                </p>
-
-            </div>
-
-
-            {/* ----------------------------------------------------------
-                Account
-            ---------------------------------------------------------- */}
-
-            <div
-                style={
-                    styles.card
-                }
-            >
-
-                <h2>
-                    👤 Account
-                </h2>
-
-
-                <p>
-
-                    <strong>
-                        Name:
-                    </strong>{" "}
-
-                    {
-                        user?.name ||
-                        "N/A"
-                    }
-
-                </p>
-
-
-                <p>
-
-                    <strong>
-                        Email:
-                    </strong>{" "}
-
-                    {
-                        user?.email ||
-                        "N/A"
-                    }
-
-                </p>
-
-            </div>
-
-
-            {/* ----------------------------------------------------------
-                Error Message
-            ---------------------------------------------------------- */}
-
-            {error && (
-
-                <div
-                    style={
-                        styles.error
-                    }
-                >
-
-                    ❌ {error}
-
-                </div>
-
-            )}
-
-
-            {/* ----------------------------------------------------------
-                Create Project
-            ---------------------------------------------------------- */}
-
-            <div
-                style={
-                    styles.card
-                }
-            >
-
-                <h2>
-                    📁 Create Project
-                </h2>
-
-
-                <p>
-                    Create a new project.
-                </p>
-
-
-                <form
-                    onSubmit={
-                        handleCreateProject
-                    }
-                >
-
-
-                    <input
-
-                        type="text"
-
-                        placeholder="Project name"
-
-                        value={
-                            name
-                        }
-
-                        onChange={(event) =>
-                            setName(
-                                event.target.value
-                            )
-                        }
-
-                        style={
-                            styles.input
-                        }
-
-                    />
-
-
-                    <textarea
-
-                        placeholder="Project description"
-
-                        value={
-                            description
-                        }
-
-                        onChange={(event) =>
-                            setDescription(
-                                event.target.value
-                            )
-                        }
-
-                        style={
-                            styles.textarea
-                        }
-
-                    />
-
-
-                    <button
-
-                        type="submit"
-
-                        style={
-                            styles.primaryButton
-                        }
-
-                    >
-
-                        + Create Project
-
-                    </button>
-
-
-                </form>
-
-            </div>
-
-
-            {/* ----------------------------------------------------------
-                Projects
-            ---------------------------------------------------------- */}
-
-            <div
-                style={
-                    styles.card
-                }
-            >
-
-
-                <div
-                    style={
-                        styles.projectHeader
-                    }
-                >
+                    <div className="brand-icon">
+                        🚀
+                    </div>
 
                     <div>
 
-                        <h2>
-                            📂 My Projects
-                        </h2>
+                        <div className="brand-name">
+                            DevPilot AI
+                        </div>
 
+                        <div className="brand-subtitle">
+                            Developer Workspace
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div className="nav-right">
+
+                    <div className="system-status">
+
+                        <span className="status-dot"></span>
+
+                        System Operational
+
+                    </div>
+
+
+                    <div className="user-menu">
+
+                        <div className="user-avatar">
+
+                            {
+                                user?.name
+                                    ?.charAt(0)
+                                    ?.toUpperCase()
+                                    || "D"
+                            }
+
+                        </div>
+
+                        <div className="user-info">
+
+                            <span className="user-name">
+
+                                {
+                                    user?.name ||
+                                    "Developer"
+                                }
+
+                            </span>
+
+                            <span className="user-role">
+                                Developer
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        className="logout-button"
+                        onClick={logout}
+                    >
+                        Logout
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            {/* =================================================
+                MAIN CONTENT
+            ================================================= */}
+
+            <main className="dashboard-content">
+
+
+                {/* =================================================
+                    HERO
+                ================================================= */}
+
+                <section className="dashboard-hero">
+
+                    <div>
+
+                        <div className="hero-eyebrow">
+                            DEVELOPER WORKSPACE
+                        </div>
+
+                        <h1>
+
+                            Welcome back,{" "}
+
+                            {
+                                user?.name ||
+                                "Developer"
+                            }
+
+                            <span> 👋</span>
+
+                        </h1>
 
                         <p>
-                            Projects belonging to your account.
+                            Build, manage and organize your
+                            development projects in one place.
                         </p>
 
                     </div>
 
 
-                    <strong>
-
-                        {
-                            projects.length
+                    <button
+                        className="hero-create-button"
+                        onClick={() =>
+                            setShowCreateForm(true)
                         }
+                    >
 
-                        {" "}
+                        <span>+</span>
 
-                        project
+                        New Project
 
-                        {
-                            projects.length !== 1
-                                ? "s"
-                                : ""
-                        }
+                    </button>
 
-                    </strong>
-
-                </div>
+                </section>
 
 
-                {/* ------------------------------------------------------
-                    No Projects
-                ------------------------------------------------------ */}
+                {/* =================================================
+                    ERROR
+                ================================================= */}
 
-                {
-                    projects.length === 0
-                        ? (
+                {error && (
 
-                            <div
-                                style={
-                                    styles.empty
-                                }
-                            >
+                    <div className="dashboard-error">
 
-                                <h3>
-                                    No projects yet
-                                </h3>
+                        <span>!</span>
+
+                        <div>
+
+                            <strong>
+                                Something went wrong
+                            </strong>
+
+                            <p>
+                                {error}
+                            </p>
+
+                        </div>
+
+                        <button
+                            onClick={() =>
+                                setError("")
+                            }
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                )}
 
 
-                                <p>
-                                    Create your first project above.
-                                </p>
+                {/* =================================================
+                    STATS
+                ================================================= */}
+
+                <section className="stats-grid">
+
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon blue">
+                            📁
+                        </div>
+
+                        <div>
+
+                            <span className="stat-label">
+                                Total Projects
+                            </span>
+
+                            <strong className="stat-value">
+                                {projects.length}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon green">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <span className="stat-label">
+                                System Status
+                            </span>
+
+                            <strong className="stat-value small">
+                                Operational
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="stat-card">
+
+                        <div className="stat-icon purple">
+                            ⚡
+                        </div>
+
+                        <div>
+
+                            <span className="stat-label">
+                                Workspace
+                            </span>
+
+                            <strong className="stat-value small">
+                                DevPilot AI
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                {/* =================================================
+                    CREATE PROJECT
+                ================================================= */}
+
+                {showCreateForm && (
+
+                    <section className="create-project-card">
+
+                        <div className="section-heading">
+
+                            <div>
+
+                                <div className="section-icon">
+                                    ✦
+                                </div>
+
+                                <div>
+
+                                    <h2>
+                                        Create a new project
+                                    </h2>
+
+                                    <p>
+                                        Start a new workspace for
+                                        your development project.
+                                    </p>
+
+                                </div>
 
                             </div>
 
-                        )
-                        : (
+
+                            <button
+                                className="close-button"
+                                onClick={() => {
+
+                                    setShowCreateForm(
+                                        false
+                                    );
+
+                                    setError("");
+
+                                }}
+                            >
+                                ×
+                            </button>
+
+                        </div>
 
 
-                            /*
-                            --------------------------------------------------
-                            Project List
-                            --------------------------------------------------
-                            */
+                        <form
+                            className="project-form"
+                            onSubmit={
+                                handleCreateProject
+                            }
+                        >
 
-                            projects.map(
+                            <div className="form-field">
+
+                                <label>
+                                    Project name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    placeholder="e.g. E-Commerce Platform"
+                                    value={name}
+                                    onChange={(event) =>
+                                        setName(
+                                            event.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+
+                            <div className="form-field">
+
+                                <label>
+                                    Description
+                                </label>
+
+                                <textarea
+                                    placeholder="What are you building?"
+                                    value={description}
+                                    onChange={(event) =>
+                                        setDescription(
+                                            event.target.value
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+
+                            <div className="form-actions">
+
+                                <button
+                                    type="button"
+                                    className="cancel-button"
+                                    onClick={() => {
+
+                                        setShowCreateForm(
+                                            false
+                                        );
+
+                                        setName("");
+
+                                        setDescription("");
+
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+
+
+                                <button
+                                    type="submit"
+                                    className="submit-button"
+                                    disabled={creating}
+                                >
+
+                                    {creating
+                                        ? "Creating..."
+                                        : "Create Project →"
+                                    }
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </section>
+
+                )}
+
+
+                {/* =================================================
+                    PROJECTS
+                ================================================= */}
+
+                <section className="projects-section">
+
+
+                    <div className="projects-heading">
+
+                        <div>
+
+                            <div className="section-title-row">
+
+                                <div className="section-icon purple">
+                                    ◈
+                                </div>
+
+                                <h2>
+                                    Your Projects
+                                </h2>
+
+                                <span className="project-count">
+                                    {projects.length}
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Your development workspaces
+                            </p>
+
+                        </div>
+
+
+                        {!showCreateForm && (
+
+                            <button
+                                className="small-create-button"
+                                onClick={() =>
+                                    setShowCreateForm(
+                                        true
+                                    )
+                                }
+                            >
+                                + New Project
+                            </button>
+
+                        )}
+
+                    </div>
+
+
+                    {/* =================================================
+                        EMPTY STATE
+                    ================================================= */}
+
+                    {projects.length === 0 ? (
+
+                        <div className="empty-projects">
+
+                            <div className="empty-icon">
+                                📁
+                            </div>
+
+                            <h3>
+                                No projects yet
+                            </h3>
+
+                            <p>
+                                Create your first project and
+                                start building with DevPilot AI.
+                            </p>
+
+                            <button
+                                onClick={() =>
+                                    setShowCreateForm(
+                                        true
+                                    )
+                                }
+                                className="submit-button"
+                            >
+                                Create your first project →
+                            </button>
+
+                        </div>
+
+                    ) : (
+
+                        <div className="projects-grid">
+
+                            {projects.map(
                                 (project) => (
 
-
                                     <div
-
                                         key={
                                             project._id
                                         }
-
-                                        style={
-                                            styles.projectCard
-                                        }
-
+                                        className="project-card"
                                     >
 
 
-                                        {
-                                            editingProjectId ===
-                                            project._id
+                                        {/* EDIT MODE */}
 
-                                                ? (
+                                        {editingProjectId ===
+                                        project._id ? (
 
+                                            <form
+                                                className="edit-form"
+                                                onSubmit={
+                                                    handleUpdateProject
+                                                }
+                                            >
 
-                                                    /*
-                                                    --------------------------
-                                                    Edit Form
-                                                    --------------------------
-                                                    */
+                                                <div className="edit-header">
 
-                                                    <form
+                                                    <span>
+                                                        Edit Project
+                                                    </span>
 
-                                                        onSubmit={
-                                                            handleUpdateProject
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            handleCancelEdit
                                                         }
-
                                                     >
+                                                        ×
+                                                    </button>
 
-                                                        <h3>
-                                                            ✏️ Edit Project
-                                                        </h3>
-
-
-                                                        <input
-
-                                                            type="text"
-
-                                                            value={
-                                                                editName
-                                                            }
-
-                                                            onChange={
-                                                                (event) =>
-                                                                    setEditName(
-                                                                        event.target.value
-                                                                    )
-                                                            }
-
-                                                            style={
-                                                                styles.input
-                                                            }
-
-                                                        />
+                                                </div>
 
 
-                                                        <textarea
-
-                                                            value={
-                                                                editDescription
-                                                            }
-
-                                                            onChange={
-                                                                (event) =>
-                                                                    setEditDescription(
-                                                                        event.target.value
-                                                                    )
-                                                            }
-
-                                                            style={
-                                                                styles.textarea
-                                                            }
-
-                                                        />
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        editName
+                                                    }
+                                                    onChange={
+                                                        (event) =>
+                                                            setEditName(
+                                                                event.target.value
+                                                            )
+                                                    }
+                                                />
 
 
-                                                        <button
-
-                                                            type="submit"
-
-                                                            style={
-                                                                styles.primaryButton
-                                                            }
-
-                                                        >
-
-                                                            Save Changes
-
-                                                        </button>
+                                                <textarea
+                                                    value={
+                                                        editDescription
+                                                    }
+                                                    onChange={
+                                                        (event) =>
+                                                            setEditDescription(
+                                                                event.target.value
+                                                            )
+                                                    }
+                                                />
 
 
-                                                        <button
+                                                <div className="edit-actions">
 
-                                                            type="button"
+                                                    <button
+                                                        type="button"
+                                                        className="cancel-button"
+                                                        onClick={
+                                                            handleCancelEdit
+                                                        }
+                                                    >
+                                                        Cancel
+                                                    </button>
 
-                                                            onClick={
-                                                                handleCancelEdit
-                                                            }
+                                                    <button
+                                                        type="submit"
+                                                        className="submit-button"
+                                                    >
+                                                        Save Changes
+                                                    </button>
 
-                                                            style={
-                                                                styles.secondaryButton
-                                                            }
+                                                </div>
 
-                                                        >
+                                            </form>
 
-                                                            Cancel
+                                        ) : (
 
-                                                        </button>
+                                            /* =================================================
+                                               NORMAL PROJECT
+                                            ================================================= */
 
+                                            <>
 
-                                                    </form>
+                                                <div className="project-card-top">
 
-
-                                                )
-                                                : (
-
-
-                                                    /*
-                                                    --------------------------
-                                                    Normal Project Card
-                                                    --------------------------
-                                                    */
-
-                                                    <>
-
-
-                                                        {/* Project Name */}
-
-                                                        <h3>
-
-                                                            📁{" "}
-
-                                                            {
-                                                                project.name
-                                                            }
-
-                                                        </h3>
+                                                    <div className="project-folder">
+                                                        📁
+                                                    </div>
 
 
-                                                        {/* Project Description */}
+                                                    <div className="project-menu">
 
-                                                        <p>
+                                                        <span className="project-status">
+                                                            Active
+                                                        </span>
 
-                                                            {
-                                                                project.description ||
-                                                                "No description provided."
-                                                            }
+                                                    </div>
 
-                                                        </p>
+                                                </div>
 
 
-                                                        {/* Project ID */}
+                                                <h3>
+                                                    {
+                                                        project.name
+                                                    }
+                                                </h3>
 
-                                                        <p
-                                                            style={
-                                                                styles.projectId
-                                                            }
-                                                        >
 
-                                                            <strong>
-                                                                Project ID:
-                                                            </strong>{" "}
+                                                <p className="project-description">
 
-                                                            {
+                                                    {
+                                                        project.description ||
+                                                        "No description provided."
+                                                    }
+
+                                                </p>
+
+
+                                                <div className="project-meta">
+
+                                                    <span>
+                                                        Dev workspace
+                                                    </span>
+
+                                                </div>
+
+
+                                                <div className="project-actions">
+
+                                                    <button
+                                                        className="open-project-button"
+                                                        onClick={() =>
+                                                            setSelectedProjectId(
                                                                 project._id
-                                                            }
-
-                                                        </p>
-
-
-                                                        {/* ------------------------------------------------
-                                                            Open Project
-                                                        ------------------------------------------------
-                                                        
-                                                        Clicking this button:
-
-                                                        1. Gets project ID.
-                                                        2. Saves it in selectedProjectId.
-                                                        3. Dashboard displays ProjectDetails.
-
-                                                        ------------------------------------------------ */}
-
-                                                        <button
-
-                                                            onClick={() => {
-
-                                                                /*
-                                                                Store selected
-                                                                project ID.
-                                                                */
-
-                                                                setSelectedProjectId(
-                                                                    project._id
-                                                                );
-
-                                                            }}
-
-                                                            style={
-                                                                styles.openButton
-                                                            }
-
-                                                        >
-
-                                                            🚀 Open Project
-
-                                                        </button>
+                                                            )
+                                                        }
+                                                    >
+                                                        Open Project
+                                                        <span>→</span>
+                                                    </button>
 
 
-                                                        {/* Edit */}
-
-                                                        <button
-
-                                                            onClick={() =>
-                                                                handleStartEdit(
-                                                                    project
-                                                                )
-                                                            }
-
-                                                            style={
-                                                                styles.editButton
-                                                            }
-
-                                                        >
-
-                                                            ✏️ Edit
-
-                                                        </button>
+                                                    <button
+                                                        className="icon-action edit"
+                                                        onClick={() =>
+                                                            handleStartEdit(
+                                                                project
+                                                            )
+                                                        }
+                                                        title="Edit project"
+                                                    >
+                                                        ✎
+                                                    </button>
 
 
-                                                        {/* Delete */}
+                                                    <button
+                                                        className="icon-action delete"
+                                                        onClick={() =>
+                                                            handleDeleteProject(
+                                                                project._id
+                                                            )
+                                                        }
+                                                        title="Delete project"
+                                                    >
+                                                        🗑
+                                                    </button>
 
-                                                        <button
+                                                </div>
 
-                                                            onClick={() =>
-                                                                handleDeleteProject(
-                                                                    project._id
-                                                                )
-                                                            }
+                                            </>
 
-                                                            style={
-                                                                styles.deleteButton
-                                                            }
-
-                                                        >
-
-                                                            🗑️ Delete
-
-                                                        </button>
-
-
-                                                    </>
-
-
-                                                )
-                                        }
-
+                                        )}
 
                                     </div>
 
-
                                 )
-                            )
+                            )}
 
-                        )
-                }
+                        </div>
+
+                    )}
+
+                </section>
 
 
-            </div>
+                {/* =================================================
+                    FOOTER
+                ================================================= */}
 
+                <footer className="dashboard-footer">
+
+                    <div>
+                        🚀 DevPilot AI
+                    </div>
+
+                    <span>
+                        AI-powered developer workspace
+                    </span>
+
+                    <span>
+                        v1.0
+                    </span>
+
+                </footer>
+
+
+            </main>
 
         </div>
 
@@ -1428,451 +1125,5 @@ const Dashboard = () => {
 
 };
 
-
-/*
-|--------------------------------------------------------------------------
-| Temporary Styles
-|--------------------------------------------------------------------------
-|
-| These are temporary inline styles.
-|
-| Later we can move the styling into CSS/Tailwind.
-|
-|--------------------------------------------------------------------------
-*/
-
-const styles = {
-
-
-    /*
-    Page
-    */
-
-    page: {
-
-        minHeight:
-            "100vh",
-
-        backgroundColor:
-            "#f5f7fa",
-
-        padding:
-            "30px",
-
-        fontFamily:
-            "Arial, Helvetica, sans-serif",
-
-    },
-
-
-    /*
-    Header
-    */
-
-    header: {
-
-        maxWidth:
-            "900px",
-
-        margin:
-            "0 auto 25px",
-
-        display:
-            "flex",
-
-        justifyContent:
-            "space-between",
-
-        alignItems:
-            "center",
-
-    },
-
-
-    /*
-    Generic Card
-    */
-
-    card: {
-
-        maxWidth:
-            "900px",
-
-        margin:
-            "20px auto",
-
-        padding:
-            "25px",
-
-        backgroundColor:
-            "#ffffff",
-
-        border:
-            "1px solid #ddd",
-
-        borderRadius:
-            "10px",
-
-        boxShadow:
-            "0 2px 8px rgba(0,0,0,0.05)",
-
-    },
-
-
-    /*
-    Project Header
-    */
-
-    projectHeader: {
-
-        display:
-            "flex",
-
-        justifyContent:
-            "space-between",
-
-        alignItems:
-            "center",
-
-    },
-
-
-    /*
-    Project Card
-    */
-
-    projectCard: {
-
-        marginTop:
-            "15px",
-
-        padding:
-            "20px",
-
-        border:
-            "1px solid #ddd",
-
-        borderRadius:
-            "8px",
-
-        backgroundColor:
-            "#fafafa",
-
-    },
-
-
-    /*
-    Project ID
-    */
-
-    projectId: {
-
-        fontSize:
-            "13px",
-
-        color:
-            "#666",
-
-        wordBreak:
-            "break-all",
-
-    },
-
-
-    /*
-    Input
-    */
-
-    input: {
-
-        display:
-            "block",
-
-        width:
-            "100%",
-
-        boxSizing:
-            "border-box",
-
-        padding:
-            "10px",
-
-        marginBottom:
-            "12px",
-
-        border:
-            "1px solid #ccc",
-
-        borderRadius:
-            "6px",
-
-        fontSize:
-            "15px",
-
-    },
-
-
-    /*
-    Textarea
-    */
-
-    textarea: {
-
-        display:
-            "block",
-
-        width:
-            "100%",
-
-        minHeight:
-            "90px",
-
-        boxSizing:
-            "border-box",
-
-        padding:
-            "10px",
-
-        marginBottom:
-            "12px",
-
-        border:
-            "1px solid #ccc",
-
-        borderRadius:
-            "6px",
-
-        fontSize:
-            "15px",
-
-        resize:
-            "vertical",
-
-    },
-
-
-    /*
-    Primary Button
-    */
-
-    primaryButton: {
-
-        padding:
-            "10px 16px",
-
-        border:
-            "none",
-
-        borderRadius:
-            "6px",
-
-        backgroundColor:
-            "#2563eb",
-
-        color:
-            "white",
-
-        cursor:
-            "pointer",
-
-        marginRight:
-            "8px",
-
-    },
-
-
-    /*
-    Secondary Button
-    */
-
-    secondaryButton: {
-
-        padding:
-            "10px 16px",
-
-        border:
-            "1px solid #aaa",
-
-        borderRadius:
-            "6px",
-
-        backgroundColor:
-            "#ffffff",
-
-        cursor:
-            "pointer",
-
-        marginRight:
-            "8px",
-
-    },
-
-
-    /*
-    Open Project Button
-    */
-
-    openButton: {
-
-        padding:
-            "8px 14px",
-
-        border:
-            "1px solid #2563eb",
-
-        borderRadius:
-            "6px",
-
-        backgroundColor:
-            "#ffffff",
-
-        color:
-            "#2563eb",
-
-        cursor:
-            "pointer",
-
-        marginRight:
-            "8px",
-
-    },
-
-
-    /*
-    Edit Button
-    */
-
-    editButton: {
-
-        padding:
-            "8px 14px",
-
-        border:
-            "1px solid #aaa",
-
-        borderRadius:
-            "6px",
-
-        backgroundColor:
-            "#ffffff",
-
-        cursor:
-            "pointer",
-
-        marginRight:
-            "8px",
-
-    },
-
-
-    /*
-    Delete Button
-    */
-
-    deleteButton: {
-
-        padding:
-            "8px 14px",
-
-        border:
-            "none",
-
-        borderRadius:
-            "6px",
-
-        backgroundColor:
-            "#dc2626",
-
-        color:
-            "white",
-
-        cursor:
-            "pointer",
-
-    },
-
-
-    /*
-    Logout Button
-    */
-
-    logoutButton: {
-
-        padding:
-            "9px 16px",
-
-        border:
-            "none",
-
-        borderRadius:
-            "6px",
-
-        backgroundColor:
-            "#dc2626",
-
-        color:
-            "white",
-
-        cursor:
-            "pointer",
-
-    },
-
-
-    /*
-    Error
-    */
-
-    error: {
-
-        maxWidth:
-            "900px",
-
-        margin:
-            "20px auto",
-
-        padding:
-            "15px",
-
-        backgroundColor:
-            "#fee2e2",
-
-        border:
-            "1px solid #fca5a5",
-
-        borderRadius:
-            "8px",
-
-        color:
-            "#991b1b",
-
-    },
-
-
-    /*
-    Empty Project State
-    */
-
-    empty: {
-
-        padding:
-            "30px",
-
-        textAlign:
-            "center",
-
-        color:
-            "#666",
-
-    },
-
-};
-
-
-/*
-|--------------------------------------------------------------------------
-| Export
-|--------------------------------------------------------------------------
-*/
 
 export default Dashboard;

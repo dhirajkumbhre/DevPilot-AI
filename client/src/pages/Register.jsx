@@ -1,20 +1,22 @@
 /*
 |--------------------------------------------------------------------------
-| File        : Login.jsx
+| File        : Register.jsx
 | Project     : DevPilot AI
 |--------------------------------------------------------------------------
 |
-| Login page.
+| Registration page.
 |
 |--------------------------------------------------------------------------
 */
 
 import { useState } from "react";
 
+import { registerUser } from "../services/auth.service.js";
+
 import { useAuth } from "../context/AuthContext.jsx";
 
 
-const Login = ({ onSwitchToRegister }) => {
+const Register = ({ onSwitchToLogin }) => {
 
     const { login } = useAuth();
 
@@ -25,20 +27,26 @@ const Login = ({ onSwitchToRegister }) => {
     |--------------------------------------------------------------------------
     */
 
+    const [name, setName] = useState("");
+
     const [email, setEmail] = useState("");
 
     const [password, setPassword] = useState("");
+
+    const [confirmPassword, setConfirmPassword] =
+        useState("");
 
     const [loading, setLoading] = useState(false);
 
     const [error, setError] = useState("");
 
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] =
+        useState(false);
 
 
     /*
     |--------------------------------------------------------------------------
-    | Submit Login
+    | Register
     |--------------------------------------------------------------------------
     */
 
@@ -49,10 +57,30 @@ const Login = ({ onSwitchToRegister }) => {
         setError("");
 
 
-        if (!email || !password) {
+        if (!name || !email || !password) {
 
             setError(
-                "Please enter your email and password."
+                "Name, email and password are required."
+            );
+
+            return;
+        }
+
+
+        if (password.length < 6) {
+
+            setError(
+                "Password must be at least 6 characters."
+            );
+
+            return;
+        }
+
+
+        if (password !== confirmPassword) {
+
+            setError(
+                "Passwords do not match."
             );
 
             return;
@@ -63,21 +91,51 @@ const Login = ({ onSwitchToRegister }) => {
 
             setLoading(true);
 
-            await login({
+
+            /*
+            ----------------------------------------------------------
+            Register user
+            ----------------------------------------------------------
+            */
+
+            const data = await registerUser({
+
+                name,
                 email,
                 password,
+
             });
+
+
+            /*
+            ----------------------------------------------------------
+            Automatically log the user in.
+            ----------------------------------------------------------
+            */
+
+            await login({
+
+                email,
+                password,
+
+            });
+
+
+            console.log(
+                "Registration successful:",
+                data
+            );
 
         } catch (err) {
 
             console.error(
-                "Login failed:",
+                "Registration failed:",
                 err
             );
 
             setError(
                 err.message ||
-                "Unable to sign in."
+                "Registration failed."
             );
 
         } finally {
@@ -92,26 +150,18 @@ const Login = ({ onSwitchToRegister }) => {
 
         <section style={styles.card}>
 
-            {/* ------------------------------------------------------
-                Header
-            ------------------------------------------------------ */}
-
-            <div style={styles.cardHeader}>
+            <div style={styles.header}>
 
                 <h2 style={styles.title}>
-                    Welcome back
+                    Create your account
                 </h2>
 
                 <p style={styles.subtitle}>
-                    Sign in to continue building.
+                    Start building with DevPilot AI.
                 </p>
 
             </div>
 
-
-            {/* ------------------------------------------------------
-                Error
-            ------------------------------------------------------ */}
 
             {error && (
 
@@ -121,55 +171,62 @@ const Login = ({ onSwitchToRegister }) => {
                         !
                     </span>
 
-                    <span>
-                        {error}
-                    </span>
+                    {error}
 
                 </div>
 
             )}
 
 
-            {/* ------------------------------------------------------
-                Form
-            ------------------------------------------------------ */}
-
             <form onSubmit={handleSubmit}>
+
+
+                {/* Name */}
+
+                <div style={styles.field}>
+
+                    <label style={styles.label}>
+                        Full name
+                    </label>
+
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(event) =>
+                            setName(
+                                event.target.value
+                            )
+                        }
+                        placeholder="Your name"
+                        autoComplete="name"
+                        disabled={loading}
+                        style={styles.input}
+                    />
+
+                </div>
 
 
                 {/* Email */}
 
                 <div style={styles.field}>
 
-                    <label
-                        htmlFor="login-email"
-                        style={styles.label}
-                    >
+                    <label style={styles.label}>
                         Email address
                     </label>
 
-                    <div style={styles.inputWrapper}>
-
-                        <span style={styles.inputIcon}>
-                            @
-                        </span>
-
-                        <input
-                            id="login-email"
-                            type="email"
-                            value={email}
-                            onChange={(event) =>
-                                setEmail(
-                                    event.target.value
-                                )
-                            }
-                            placeholder="you@example.com"
-                            autoComplete="email"
-                            disabled={loading}
-                            style={styles.input}
-                        />
-
-                    </div>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(event) =>
+                            setEmail(
+                                event.target.value
+                            )
+                        }
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        disabled={loading}
+                        style={styles.input}
+                    />
 
                 </div>
 
@@ -178,21 +235,13 @@ const Login = ({ onSwitchToRegister }) => {
 
                 <div style={styles.field}>
 
-                    <label
-                        htmlFor="login-password"
-                        style={styles.label}
-                    >
+                    <label style={styles.label}>
                         Password
                     </label>
 
-                    <div style={styles.inputWrapper}>
-
-                        <span style={styles.inputIcon}>
-                            •
-                        </span>
+                    <div style={styles.passwordWrapper}>
 
                         <input
-                            id="login-password"
                             type={
                                 showPassword
                                     ? "text"
@@ -204,8 +253,8 @@ const Login = ({ onSwitchToRegister }) => {
                                     event.target.value
                                 )
                             }
-                            placeholder="Enter your password"
-                            autoComplete="current-password"
+                            placeholder="Minimum 6 characters"
+                            autoComplete="new-password"
                             disabled={loading}
                             style={styles.input}
                         />
@@ -217,7 +266,7 @@ const Login = ({ onSwitchToRegister }) => {
                                     (value) => !value
                                 )
                             }
-                            style={styles.passwordButton}
+                            style={styles.showButton}
                         >
                             {showPassword
                                 ? "Hide"
@@ -229,15 +278,38 @@ const Login = ({ onSwitchToRegister }) => {
                 </div>
 
 
-                {/* --------------------------------------------------
-                    Sign In
-                -------------------------------------------------- */}
+                {/* Confirm Password */}
+
+                <div style={styles.field}>
+
+                    <label style={styles.label}>
+                        Confirm password
+                    </label>
+
+                    <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(event) =>
+                            setConfirmPassword(
+                                event.target.value
+                            )
+                        }
+                        placeholder="Repeat your password"
+                        autoComplete="new-password"
+                        disabled={loading}
+                        style={styles.input}
+                    />
+
+                </div>
+
+
+                {/* Register */}
 
                 <button
                     type="submit"
                     disabled={loading}
                     style={{
-                        ...styles.loginButton,
+                        ...styles.registerButton,
                         ...(loading
                             ? styles.disabled
                             : {}),
@@ -245,46 +317,34 @@ const Login = ({ onSwitchToRegister }) => {
                 >
 
                     {loading
-                        ? "Signing in..."
-                        : "Sign in  →"}
+                        ? "Creating account..."
+                        : "Create account  →"}
 
                 </button>
 
 
-                {/* --------------------------------------------------
-                    Register
-                -------------------------------------------------- */}
+                {/* Login */}
 
-                <div style={styles.authSwitch}>
+                <div style={styles.switch}>
 
                     <span>
-                        Don't have an account?
+                        Already have an account?
                     </span>
 
                     <button
                         type="button"
-                        onClick={onSwitchToRegister}
-                        style={styles.createButton}
+                        onClick={onSwitchToLogin}
+                        style={styles.loginLink}
                     >
-                        Create account
+                        Sign in
                     </button>
 
                 </div>
 
 
-                {/* --------------------------------------------------
-                    Security
-                -------------------------------------------------- */}
-
                 <div style={styles.security}>
-
-                    🔒
-
-                    <span>
-                        Your session is secured with
-                        JWT authentication.
-                    </span>
-
+                    🔒 Your password is securely hashed
+                    before storage.
                 </div>
 
             </form>
@@ -311,11 +371,10 @@ const styles = {
         background: "rgba(15, 22, 36, 0.94)",
         boxShadow:
             "0 25px 70px rgba(0, 0, 0, 0.38)",
-        backdropFilter: "blur(14px)",
     },
 
 
-    cardHeader: {
+    header: {
         marginBottom: "24px",
     },
 
@@ -324,7 +383,6 @@ const styles = {
         margin: "0 0 7px",
         color: "#f0f4fa",
         fontSize: "21px",
-        fontWeight: "750",
     },
 
 
@@ -363,7 +421,7 @@ const styles = {
 
 
     field: {
-        marginBottom: "17px",
+        marginBottom: "16px",
     },
 
 
@@ -376,28 +434,10 @@ const styles = {
     },
 
 
-    inputWrapper: {
-        position: "relative",
-        display: "flex",
-        alignItems: "center",
-        width: "100%",
-    },
-
-
-    inputIcon: {
-        position: "absolute",
-        left: "13px",
-        color: "#617087",
-        fontSize: "12px",
-        fontWeight: "700",
-        zIndex: 1,
-    },
-
-
     input: {
         width: "100%",
         height: "44px",
-        padding: "0 45px 0 35px",
+        padding: "0 13px",
         boxSizing: "border-box",
         border: "1px solid #28364b",
         borderRadius: "8px",
@@ -405,24 +445,27 @@ const styles = {
         background: "#0b111d",
         color: "#edf2f8",
         fontSize: "12px",
-        fontFamily:
-            "Inter, Arial, Helvetica, sans-serif",
     },
 
 
-    passwordButton: {
+    passwordWrapper: {
+        position: "relative",
+    },
+
+
+    showButton: {
         position: "absolute",
-        right: "9px",
+        right: "10px",
+        top: "13px",
         border: "none",
         background: "transparent",
         color: "#718098",
         cursor: "pointer",
         fontSize: "9px",
-        fontWeight: "650",
     },
 
 
-    loginButton: {
+    registerButton: {
         width: "100%",
         height: "45px",
         marginTop: "5px",
@@ -434,8 +477,6 @@ const styles = {
         cursor: "pointer",
         fontSize: "12px",
         fontWeight: "750",
-        boxShadow:
-            "0 8px 24px rgba(76, 120, 232, 0.18)",
     },
 
 
@@ -445,9 +486,8 @@ const styles = {
     },
 
 
-    authSwitch: {
+    switch: {
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
         gap: "7px",
         marginTop: "20px",
@@ -458,28 +498,23 @@ const styles = {
     },
 
 
-    createButton: {
+    loginLink: {
         border: "none",
         background: "transparent",
         color: "#6f91ef",
         cursor: "pointer",
-        fontSize: "10px",
         fontWeight: "700",
-        padding: 0,
+        fontSize: "10px",
     },
 
 
     security: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "7px",
         marginTop: "16px",
+        textAlign: "center",
         color: "#657288",
         fontSize: "9px",
-        textAlign: "center",
     },
 };
 
 
-export default Login;
+export default Register;
