@@ -1124,7 +1124,7 @@ const Dashboard = () => {
             </main>
             {/*Ai ASsistant*/}                   
 
-            <AIChat />
+            <AIChat projectId={selectedProjectId} />
 
         </div>
 

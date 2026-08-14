@@ -3,16 +3,18 @@
 | DevPilot AI Frontend Service
 |--------------------------------------------------------------------------
 |
-| This file communicates with our Express backend.
+| Communicates with the DevPilot AI backend.
 |
-| React component
-|      ↓
+| Flow:
+|
+| AIChat.jsx
+|     ↓
 | ai.service.js
-|      ↓
+|     ↓
 | POST /api/ai/chat
-|      ↓
+|     ↓
 | Express
-|      ↓
+|     ↓
 | Ollama
 |
 |--------------------------------------------------------------------------
@@ -20,61 +22,86 @@
 
 const API_URL = "http://localhost:5000/api/ai";
 
+
 /*
 |--------------------------------------------------------------------------
 | Send Message To AI
 |--------------------------------------------------------------------------
 |
-| Sends the user's message to the backend AI endpoint.
+| Sends:
+|
+| - user's message
+| - selected project ID
+| - authentication token
 |
 |--------------------------------------------------------------------------
 */
 
-export const sendMessageToAI = async (message) => {
-    /*
-    Send request to our Express backend.
-    */
-
-    const response = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-
-        headers: {
-            "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-            message,
-        }),
-    });
+export const sendMessageToAI = async ({
+    message,
+    projectId,
+}) => {
 
     /*
-    Convert backend response into JavaScript.
+    Get JWT from localStorage.
     */
 
-    const responseData = await response.json();
+    const token =
+        localStorage.getItem("token");
+
+
+    /*
+    Send request to backend.
+    */
+
+    const response = await fetch(
+        `${API_URL}/chat`,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json",
+
+                Authorization:
+                    `Bearer ${token}`,
+            },
+
+            body: JSON.stringify({
+
+                message,
+
+                projectId,
+
+            }),
+        }
+    );
+
+
+    /*
+    Convert backend response.
+    */
+
+    const responseData =
+        await response.json();
+
 
     /*
     Handle backend errors.
     */
 
     if (!response.ok) {
+
         throw new Error(
-            responseData.message || "AI request failed"
+            responseData.message ||
+            "AI request failed"
         );
+
     }
+
 
     /*
-    Backend response:
-
-    {
-        success: true,
-        message: "...",
-        data: {
-            response: "..."
-        }
-    }
-
-    We only return the actual AI response.
+    Return only the AI response.
     */
 
     return responseData.data.response;

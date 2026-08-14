@@ -3,182 +3,264 @@
 | DevPilot AI Chat
 |--------------------------------------------------------------------------
 |
-| Provides the user interface for communicating with
-| the local Llama 3.2 AI model.
+| AI assistant for the currently selected project.
 |
 |--------------------------------------------------------------------------
 */
 
 import { useState } from "react";
 
-import { sendMessageToAI } from "../services/ai.service.js";
+import {
+    sendMessageToAI,
+} from "../services/ai.service.js";
 
 import "../styles/ai-chat.css";
+
 
 /*
 |--------------------------------------------------------------------------
 | AI Chat Component
 |--------------------------------------------------------------------------
+|
+| Props:
+|
+| projectId
+|     ID of the currently selected project.
+|
+|--------------------------------------------------------------------------
 */
 
-const AIChat = () => {
+const AIChat = ({ projectId }) => {
+
     /*
-    ----------------------------------------------------------
+    ----------------------------------------------------------------------
     Messages
-    ----------------------------------------------------------
+    ----------------------------------------------------------------------
     */
 
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] =
+        useState([]);
+
 
     /*
-    ----------------------------------------------------------
-    Current Input
-    ----------------------------------------------------------
+    ----------------------------------------------------------------------
+    Input
+    ----------------------------------------------------------------------
     */
 
-    const [input, setInput] = useState("");
+    const [input, setInput] =
+        useState("");
+
 
     /*
-    ----------------------------------------------------------
-    Loading State
-    ----------------------------------------------------------
+    ----------------------------------------------------------------------
+    Loading
+    ----------------------------------------------------------------------
     */
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] =
+        useState(false);
+
 
     /*
-    ----------------------------------------------------------
+    ----------------------------------------------------------------------
     Send Message
-    ----------------------------------------------------------
+    ----------------------------------------------------------------------
     */
 
-    const handleSendMessage = async (event) => {
-        event.preventDefault();
+    const handleSendMessage =
+        async (event) => {
 
-        /*
-        Ignore empty messages.
-        */
+            event.preventDefault();
 
-        const message = input.trim();
-
-        if (!message || loading) {
-            return;
-        }
-
-        /*
-        Add user's message immediately to the chat.
-        */
-
-        setMessages((previousMessages) => [
-            ...previousMessages,
-
-            {
-                role: "user",
-                content: message,
-            },
-        ]);
-
-        /*
-        Clear input box.
-        */
-
-        setInput("");
-
-        /*
-        Start loading.
-        */
-
-        setLoading(true);
-
-        try {
-            /*
-            Send message to backend.
-            */
-
-            const aiResponse = await sendMessageToAI(message);
 
             /*
-            Add AI response to chat.
+            Get cleaned message.
             */
 
-            setMessages((previousMessages) => [
-                ...previousMessages,
+            const message =
+                input.trim();
 
-                {
-                    role: "assistant",
-                    content: aiResponse,
-                },
-            ]);
 
-        } catch (error) {
             /*
-            Show error inside chat.
+            Don't send empty messages.
             */
 
-            setMessages((previousMessages) => [
-                ...previousMessages,
+            if (
+                !message ||
+                loading
+            ) {
+                return;
+            }
 
-                {
-                    role: "assistant",
-                    content:
-                        error.message ||
-                        "Something went wrong while contacting the AI.",
-                },
-            ]);
 
-        } finally {
             /*
-            Stop loading.
+            ------------------------------------------------------------------
+            Add user's message to the UI immediately.
+            ------------------------------------------------------------------
             */
 
-            setLoading(false);
-        }
-    };
+            setMessages(
+                (previousMessages) => [
+
+                    ...previousMessages,
+
+                    {
+                        role: "user",
+
+                        content: message,
+                    },
+
+                ]
+            );
+
+
+            /*
+            Clear input.
+            */
+
+            setInput("");
+
+
+            /*
+            Start loading.
+            */
+
+            setLoading(true);
+
+
+            try {
+
+                /*
+                ----------------------------------------------------------------
+                Send message + project ID to backend.
+                ----------------------------------------------------------------
+                */
+
+                const aiResponse =
+                    await sendMessageToAI({
+
+                        message,
+
+                        projectId,
+
+                    });
+
+
+                /*
+                ----------------------------------------------------------------
+                Add AI response.
+                ----------------------------------------------------------------
+                */
+
+                setMessages(
+                    (previousMessages) => [
+
+                        ...previousMessages,
+
+                        {
+                            role:
+                                "assistant",
+
+                            content:
+                                aiResponse,
+                        },
+
+                    ]
+                );
+
+            } catch (error) {
+
+                /*
+                ----------------------------------------------------------------
+                Show error.
+                ----------------------------------------------------------------
+                */
+
+                setMessages(
+                    (previousMessages) => [
+
+                        ...previousMessages,
+
+                        {
+                            role:
+                                "assistant",
+
+                            content:
+                                error.message ||
+                                "Something went wrong.",
+                        },
+
+                    ]
+                );
+
+            } finally {
+
+                setLoading(false);
+
+            }
+        };
+
 
     /*
-    ----------------------------------------------------------
-    User Interface
-    ----------------------------------------------------------
+    |--------------------------------------------------------------------------
+    | User Interface
+    |--------------------------------------------------------------------------
     */
 
     return (
+
         <section className="ai-chat">
 
-            {/* --------------------------------------------------
+
+            {/* --------------------------------------------------------------
                 Header
-            -------------------------------------------------- */}
+            -------------------------------------------------------------- */}
 
             <div className="ai-chat-header">
 
-                <div>
-                    <span className="ai-chat-icon">
+                <div className="ai-chat-title">
+
+                    <div className="ai-chat-icon">
                         🚀
-                    </span>
+                    </div>
+
 
                     <div>
+
                         <h2>
                             DevPilot AI
                         </h2>
 
+
                         <p>
                             Your local AI developer assistant
                         </p>
+
                     </div>
+
                 </div>
 
+
                 <span className="ai-status">
-                    <span className="ai-status-dot"></span>
+
+                    <span
+                        className="ai-status-dot"
+                    />
+
                     Llama 3.2
+
                 </span>
 
             </div>
 
 
-            {/* --------------------------------------------------
+            {/* --------------------------------------------------------------
                 Messages
-            -------------------------------------------------- */}
+            -------------------------------------------------------------- */}
 
             <div className="ai-messages">
+
 
                 {messages.length === 0 && (
 
@@ -188,14 +270,16 @@ const AIChat = () => {
                             ✨
                         </div>
 
+
                         <h3>
                             How can I help you?
                         </h3>
 
+
                         <p>
-                            Ask me about your code, debugging,
-                            JavaScript, React, Node.js or anything
-                            related to development.
+                            Ask me about this project,
+                            your code, debugging,
+                            React, Node.js or JavaScript.
                         </p>
 
                     </div>
@@ -203,41 +287,58 @@ const AIChat = () => {
                 )}
 
 
-                {messages.map((message, index) => (
+                {messages.map(
+                    (message, index) => (
 
-                    <div
-                        key={index}
-                        className={`ai-message ${
-                            message.role === "user"
-                                ? "ai-message-user"
-                                : "ai-message-assistant"
-                        }`}
-                    >
+                        <div
+                            key={index}
 
-                        <div className="ai-message-label">
+                            className={
+                                message.role === "user"
 
-                            {message.role === "user"
-                                ? "You"
-                                : "DevPilot AI"}
+                                    ? "ai-message ai-message-user"
+
+                                    : "ai-message ai-message-assistant"
+                            }
+                        >
+
+                            <div
+                                className="ai-message-label"
+                            >
+
+                                {message.role === "user"
+                                    ? "You"
+                                    : "DevPilot AI"}
+
+                            </div>
+
+
+                            <div
+                                className="ai-message-content"
+                            >
+
+                                {message.content}
+
+                            </div>
 
                         </div>
 
-                        <div className="ai-message-content">
-                            {message.content}
-                        </div>
-
-                    </div>
-
-                ))}
+                    )
+                )}
 
 
                 {loading && (
 
-                    <div className="ai-message ai-message-assistant">
+                    <div
+                        className="ai-message ai-message-assistant"
+                    >
 
-                        <div className="ai-message-label">
+                        <div
+                            className="ai-message-label"
+                        >
                             DevPilot AI
                         </div>
+
 
                         <div className="ai-typing">
                             Thinking...
@@ -250,53 +351,75 @@ const AIChat = () => {
             </div>
 
 
-            {/* --------------------------------------------------
+            {/* --------------------------------------------------------------
                 Input
-            -------------------------------------------------- */}
+            -------------------------------------------------------------- */}
 
             <form
                 className="ai-input-area"
-                onSubmit={handleSendMessage}
+
+                onSubmit={
+                    handleSendMessage
+                }
             >
 
                 <input
                     type="text"
+
                     value={input}
+
                     onChange={(event) =>
-                        setInput(event.target.value)
+                        setInput(
+                            event.target.value
+                        )
                     }
-                    placeholder="Ask DevPilot AI anything..."
-                    disabled={loading}
+
+                    placeholder={
+                        projectId
+                            ? "Ask about this project..."
+                            : "Select a project first..."
+                    }
+
+                    disabled={
+                        loading ||
+                        !projectId
+                    }
                 />
+
 
                 <button
                     type="submit"
+
                     disabled={
                         loading ||
-                        !input.trim()
+                        !input.trim() ||
+                        !projectId
                     }
                 >
+
                     {loading
                         ? "..."
                         : "Send →"}
+
                 </button>
 
             </form>
 
 
-            {/* --------------------------------------------------
+            {/* --------------------------------------------------------------
                 Footer
-            -------------------------------------------------- */}
+            -------------------------------------------------------------- */}
 
             <div className="ai-chat-footer">
 
-                🔒 Runs locally with Ollama •
-                Your prompts stay on your machine
+                🔒 Runs locally with Ollama
 
             </div>
 
         </section>
+
     );
 };
+
 
 export default AIChat;
