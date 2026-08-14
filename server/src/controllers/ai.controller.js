@@ -104,6 +104,8 @@ export const chatWithAI = async (req, res) => {
 
             projectId,
 
+            userId:req.user.userId,
+
         });
 
 
