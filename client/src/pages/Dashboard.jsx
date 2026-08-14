@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../context/AuthContext.jsx";
 
+
 import {
     getProjects,
     createProject,
@@ -10,6 +11,9 @@ import {
 } from "../services/project.service.js";
 
 import ProjectDetails from "./ProjectDetails.jsx";
+
+import AIChat from "../components/AIChat.jsx";
+
 
 import "../styles/dashboard.css";
 
@@ -1118,6 +1122,9 @@ const Dashboard = () => {
 
 
             </main>
+            {/*Ai ASsistant*/}                   
+
+            <AIChat />
 
         </div>
 
