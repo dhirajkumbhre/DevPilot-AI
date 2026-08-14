@@ -5,6 +5,8 @@ import healthRoutes from "./routes/health.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/project.routes.js";
 
+import aiRoutes from "./routes/ai.routes.js";
+
 const app = express();
 
 /*
@@ -33,5 +35,8 @@ app.use("/api/auth", authRoutes);
 
 // Projects
 app.use("/api/projects", projectRoutes);
+
+// Ai Routes 
+app.use("/api/ai", aiRoutes);
 
 export default app;

@@ -1,115 +1,100 @@
 /*
 |--------------------------------------------------------------------------
-| File        : ai.controller.js
-| Project     : DevPilot AI
+| DevPilot AI Controller
 |--------------------------------------------------------------------------
 |
-| Purpose:
-| Handles HTTP requests related to the AI assistant.
+| The controller receives the HTTP request from the frontend
+| and passes the user's message to the AI service.
+|
+| Flow:
+|
+| React
+|   ↓
+| /api/ai/chat
+|   ↓
+| ai.controller.js
+|   ↓
+| ai.service.js
+|   ↓
+| Ollama
 |
 |--------------------------------------------------------------------------
 */
 
-import {
-    askAIService,
-} from "../services/ai.service.js";
-
+import { generateAIResponse } from "../services/ai.service.js";
 
 /*
 |--------------------------------------------------------------------------
-| Ask AI
+| Chat With AI
 |--------------------------------------------------------------------------
 |
 | POST /api/ai/chat
 |
+| Expected request:
+|
+| {
+|     "message": "Explain JWT authentication"
+| }
+|
 |--------------------------------------------------------------------------
 */
 
-export const askAI = async (req, res) => {
-
+export const chatWithAI = async (req, res) => {
     try {
-
         /*
-        ------------------------------------------------------------------
-        Get information sent by React.
-        ------------------------------------------------------------------
+        Get the user's message from the request body.
         */
 
-        const {
-            message,
-            fileName,
-            fileContent,
-        } = req.body;
-
+        const { message } = req.body;
 
         /*
-        ------------------------------------------------------------------
         Basic validation.
-        ------------------------------------------------------------------
         */
 
-        if (!message) {
-
+        if (!message || !message.trim()) {
             return res.status(400).json({
-
                 success: false,
-
                 message: "Message is required",
-
             });
         }
 
-
         /*
-        ------------------------------------------------------------------
-        Send request to AI service.
-        ------------------------------------------------------------------
+        Send the message to our AI service.
         */
 
-        const answer = await askAIService({
-
-            message,
-
-            fileName,
-
-            fileContent,
-
-        });
-
+        const aiResponse = await generateAIResponse(message);
 
         /*
-        ------------------------------------------------------------------
-        Send AI response back to React.
-        ------------------------------------------------------------------
+        Return the AI response to the frontend.
         */
 
         return res.status(200).json({
-
             success: true,
 
+            message: "AI response generated successfully",
+
             data: {
-
-                answer,
-
+                response: aiResponse,
             },
-
         });
 
     } catch (error) {
+        /*
+        Log the actual error in the backend terminal.
+        */
 
         console.error(
             "AI controller error:",
-            error
+            error.message
         );
 
+        /*
+        Send a safe error to the frontend.
+        */
 
         return res.status(500).json({
-
             success: false,
-
-            message:
-                "Unable to get response from AI",
-
+            message: "Failed to generate AI response",
         });
     }
 };

@@ -1,111 +1,71 @@
 /*
 |--------------------------------------------------------------------------
-| File        : ai.service.js
-| Project     : DevPilot AI
+| DevPilot AI Service
 |--------------------------------------------------------------------------
 |
-| Purpose:
-| Handles communication between our backend and the AI model.
+| This service communicates with our locally running Ollama AI.
 |
-|--------------------------------------------------------------------------
-*/
-
-import OpenAI from "openai";
-
-/*
-|--------------------------------------------------------------------------
-| OpenAI Client
-|--------------------------------------------------------------------------
+| Flow:
 |
-| The API key comes from the server environment.
-|
-| IMPORTANT:
-| Never put this API key inside React/frontend code.
+| Controller
+|     ↓
+| AI Service
+|     ↓
+| Ollama
+|     ↓
+| Llama 3.2
 |
 |--------------------------------------------------------------------------
 */
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const OLLAMA_URL = "http://localhost:11434/api/chat";
 
-
-/*
-|--------------------------------------------------------------------------
-| Ask AI
-|--------------------------------------------------------------------------
-|
-| Receives:
-|
-| - user message
-| - current file
-| - current file content
-|
-| Returns:
-|
-| - AI response
-|
-|--------------------------------------------------------------------------
-*/
-
-export const askAIService = async ({
-    message,
-    fileName,
-    fileContent,
-}) => {
-
+export const generateAIResponse = async (message) => {
     /*
-    ----------------------------------------------------------------------
-    Build the developer context.
-    ----------------------------------------------------------------------
+    Send the user's message to Ollama.
     */
 
-    const prompt = `
-You are DevPilot AI, an AI-powered developer assistant.
+    const response = await fetch(OLLAMA_URL, {
+        method: "POST",
 
-Help the developer understand, debug and improve their code.
+        headers: {
+            "Content-Type": "application/json",
+        },
 
-Current file:
-${fileName || "No file selected"}
+        body: JSON.stringify({
+            model: "llama3.2",
 
-Current code:
+            messages: [
+                {
+                    role: "user",
+                    content: message,
+                },
+            ],
 
-${fileContent || "No code provided"}
-
-Developer question:
-
-${message}
-
-Instructions:
-
-1. Give a clear and practical answer.
-2. Explain the reason behind your answer.
-3. If code needs to be changed, show the relevant code.
-4. Do not unnecessarily rewrite the entire project.
-5. Treat the developer as someone learning full-stack development.
-`;
-
-
-    /*
-    ----------------------------------------------------------------------
-    Send request to the AI model.
-    ----------------------------------------------------------------------
-    */
-
-    const response = await openai.responses.create({
-
-        model: "gpt-5-mini",
-
-        input: prompt,
-
+            stream: false,
+        }),
     });
 
-
     /*
-    ----------------------------------------------------------------------
-    Return the generated text.
-    ----------------------------------------------------------------------
+    If Ollama returns an error,
+    stop and report it.
     */
 
-    return response.output_text;
+    if (!response.ok) {
+        throw new Error("Ollama AI request failed");
+    }
+
+    /*
+    Convert Ollama's response into JavaScript.
+    */
+
+    const data = await response.json();
+
+    /*
+    Ollama returns the AI response inside:
+
+    data.message.content
+    */
+
+    return data.message.content;
 };

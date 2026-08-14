@@ -1,34 +1,27 @@
 /*
 |--------------------------------------------------------------------------
-| File        : ai.routes.js
-| Project     : DevPilot AI
+| DevPilot AI Routes
 |--------------------------------------------------------------------------
 */
 
 import express from "express";
 
-import {
-    askAI,
-} from "../controllers/ai.controller.js";
-
+import { chatWithAI } from "../controllers/ai.controller.js";
 
 const router = express.Router();
 
-
 /*
 |--------------------------------------------------------------------------
-| Ask AI
+| CHAT WITH AI
 |--------------------------------------------------------------------------
 |
 | POST /api/ai/chat
 |
+| Sends a message to the local Llama 3.2 model.
+|
 |--------------------------------------------------------------------------
 */
 
-router.post(
-    "/chat",
-    askAI
-);
-
+router.post("/chat", chatWithAI);
 
 export default router;
