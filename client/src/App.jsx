@@ -113,7 +113,7 @@ function App() {
             <div style={styles.centerPage}>
 
                 <div style={styles.logo}>
-                    🚀
+                    ☠️
                 </div>
 
                 <h1 style={styles.title}>
@@ -141,7 +141,7 @@ function App() {
             <div style={styles.centerPage}>
 
                 <div style={styles.logo}>
-                    🚀
+                    🍺
                 </div>
 
                 <h1 style={styles.title}>
@@ -196,7 +196,7 @@ function App() {
                 <div style={styles.brand}>
 
                     <div style={styles.smallLogo}>
-                        🚀
+                        ☠️
                     </div>
 
                     <div>
@@ -234,7 +234,7 @@ function App() {
                 <section style={styles.hero}>
 
                     <div style={styles.heroLogo}>
-                        🚀
+                        ☠️
                     </div>
 
                     <h1 style={styles.heroTitle}>
