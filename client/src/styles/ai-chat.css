@@ -514,3 +514,59 @@
         padding: 0 14px;
     }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Quick Actions
+|--------------------------------------------------------------------------
+*/
+
+.ai-quick-actions {
+    display: flex;
+
+    gap: 8px;
+
+    padding: 12px 18px;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+
+    background: rgba(15, 23, 42, 0.7);
+
+    overflow-x: auto;
+}
+
+.ai-quick-actions button {
+    flex-shrink: 0;
+
+    padding: 8px 12px;
+
+    border: 1px solid rgba(148, 163, 184, 0.18);
+
+    border-radius: 10px;
+
+    background: rgba(30, 41, 59, 0.8);
+
+    color: #cbd5e1;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.ai-quick-actions button:hover:not(:disabled) {
+    border-color: #6366f1;
+
+    color: #ffffff;
+
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.ai-quick-actions button:disabled {
+    opacity: 0.4;
+
+    cursor: not-allowed;
+}

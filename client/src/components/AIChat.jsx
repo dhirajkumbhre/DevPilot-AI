@@ -74,36 +74,64 @@ const AIChat = ({
     ----------------------------------------------------------------------
     */
 
-    const handleSendMessage =
-        async (event) => {
+    const sendPrompt = async (prompt) => {
 
-            event.preventDefault();
+        const message = prompt.trim();
 
+        if (
+            !message ||
+            loading ||
+            !projectId ||
+            !fileId
+        ) {
+            return;
+        }
+
+
+        /*
+        Add user message to chat.
+        */
+
+        setMessages(
+            (previousMessages) => [
+
+                ...previousMessages,
+
+                {
+                    role: "user",
+                    content: message,
+                },
+
+            ]
+        );
+
+
+        setInput("");
+
+        setLoading(true);
+
+
+        try {
 
             /*
-            Get cleaned message.
+            Send project + file + question
+            to the backend.
             */
 
-            const message =
-                input.trim();
+            const aiResponse =
+                await sendMessageToAI({
+
+                    message,
+
+                    projectId,
+
+                    fileId,
+
+                });
 
 
             /*
-            Don't send empty messages.
-            */
-
-            if (
-                !message ||
-                loading
-            ) {
-                return;
-            }
-
-
-            /*
-            ------------------------------------------------------------------
-            | Add user's message to the UI immediately.
-            ------------------------------------------------------------------
+            Add AI response.
             */
 
             setMessages(
@@ -112,103 +140,91 @@ const AIChat = ({
                     ...previousMessages,
 
                     {
-                        role: "user",
+                        role: "assistant",
 
-                        content: message,
+                        content:
+                            aiResponse,
                     },
 
                 ]
             );
 
+        } catch (error) {
 
-            /*
-            Clear input.
-            */
+            setMessages(
+                (previousMessages) => [
 
-            setInput("");
+                    ...previousMessages,
 
+                    {
+                        role: "assistant",
 
-            /*
-            Start loading.
-            */
+                        content:
+                            error.message ||
+                            "Something went wrong.",
+                    },
 
-            setLoading(true);
+                ]
+            );
 
+        } finally {
 
-            try {
+            setLoading(false);
 
-                /*
-                ----------------------------------------------------------------
-                | Send message + project ID + file ID to backend.
-                ----------------------------------------------------------------
-                */
-
-                const aiResponse =
-                    await sendMessageToAI({
-
-                        message,
-
-                        projectId,
-
-                        fileId,
-
-                    });
+        }
+    };
 
 
-                /*
-                ----------------------------------------------------------------
-                | Add AI response.
-                ----------------------------------------------------------------
-                */
+    /*
+    ----------------------------------------------------------------------
+    | Normal Chat Message
+    ----------------------------------------------------------------------
+    */
 
-                setMessages(
-                    (previousMessages) => [
+    const handleSendMessage =
+        async (event) => {
 
-                        ...previousMessages,
+            event.preventDefault();
 
-                        {
-                            role:
-                                "assistant",
+            const message =
+                input.trim();
 
-                            content:
-                                aiResponse,
-                        },
-
-                    ]
-                );
-
-            } catch (error) {
-
-                /*
-                ----------------------------------------------------------------
-                | Show error.
-                ----------------------------------------------------------------
-                */
-
-                setMessages(
-                    (previousMessages) => [
-
-                        ...previousMessages,
-
-                        {
-                            role:
-                                "assistant",
-
-                            content:
-                                error.message ||
-                                "Something went wrong.",
-                        },
-
-                    ]
-                );
-
-            } finally {
-
-                setLoading(false);
-
+            if (
+                !message ||
+                loading ||
+                !projectId ||
+                !fileId
+            ) {
+                return;
             }
 
+            await sendPrompt(message);
         };
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Explain Code
+    ----------------------------------------------------------------------
+    */
+
+    const handleExplainCode = () => {
+
+        sendPrompt(`
+Explain the currently selected file in detail.
+
+Please cover:
+
+1. What this file does.
+2. The important functions, components, or variables.
+3. How the code works step by step.
+4. How this file may connect with the rest of the project.
+5. Important concepts a developer should understand.
+
+Use the actual code from the selected file.
+Do not invent information that is not present in the file.
+        `);
+    };
 
 
     /*
@@ -222,9 +238,9 @@ const AIChat = ({
         <section className="ai-chat">
 
 
-            {/* --------------------------------------------------------------
-                Header
-            -------------------------------------------------------------- */}
+            {/* ==========================================================
+                HEADER
+            ========================================================== */}
 
             <div className="ai-chat-header">
 
@@ -234,13 +250,11 @@ const AIChat = ({
                         🚀
                     </div>
 
-
                     <div>
 
                         <h2>
                             DevPilot AI
                         </h2>
-
 
                         <p>
                             Your local AI developer assistant
@@ -264,12 +278,32 @@ const AIChat = ({
             </div>
 
 
-            {/* --------------------------------------------------------------
-                Messages
-            -------------------------------------------------------------- */}
+            {/* ==========================================================
+                QUICK ACTIONS
+            ========================================================== */}
+
+            <div className="ai-quick-actions">
+
+                <button
+                    type="button"
+                    onClick={handleExplainCode}
+                    disabled={
+                        loading ||
+                        !projectId ||
+                        !fileId
+                    }
+                >
+                    ✨ Explain Code
+                </button>
+
+            </div>
+
+
+            {/* ==========================================================
+                MESSAGES
+            ========================================================== */}
 
             <div className="ai-messages">
-
 
                 {messages.length === 0 && (
 
@@ -279,17 +313,13 @@ const AIChat = ({
                             ✨
                         </div>
 
-
                         <h3>
                             How can I help you?
                         </h3>
 
-
                         <p>
-                            Ask me about this project,
-                            the selected file,
-                            debugging, React,
-                            Node.js or JavaScript.
+                            Select a file and ask DevPilot
+                            about your code.
                         </p>
 
                     </div>
@@ -358,13 +388,12 @@ const AIChat = ({
 
                 )}
 
-
             </div>
 
 
-            {/* --------------------------------------------------------------
-                Input
-            -------------------------------------------------------------- */}
+            {/* ==========================================================
+                INPUT
+            ========================================================== */}
 
             <form
                 className="ai-input-area"
@@ -395,7 +424,8 @@ const AIChat = ({
 
                     disabled={
                         loading ||
-                        !projectId
+                        !projectId ||
+                        !fileId
                     }
                 />
 
@@ -406,7 +436,8 @@ const AIChat = ({
                     disabled={
                         loading ||
                         !input.trim() ||
-                        !projectId
+                        !projectId ||
+                        !fileId
                     }
                 >
 
@@ -419,9 +450,9 @@ const AIChat = ({
             </form>
 
 
-            {/* --------------------------------------------------------------
-                Footer
-            -------------------------------------------------------------- */}
+            {/* ==========================================================
+                FOOTER
+            ========================================================== */}
 
             <div className="ai-chat-footer">
 
