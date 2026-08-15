@@ -6,15 +6,15 @@
 
 .ai-chat {
     width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
+    height: 100%;
 
     display: flex;
     flex-direction: column;
 
-    min-height: 650px;
+    min-height: 0;
+    max-height: 100%;
 
-    background: rgba(15, 23, 42, 0.92);
+    background: rgba(15, 23, 42, 0.96);
 
     border: 1px solid rgba(148, 163, 184, 0.16);
 
@@ -23,7 +23,7 @@
     overflow: hidden;
 
     box-shadow:
-        0 25px 70px rgba(0, 0, 0, 0.35);
+        0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 
@@ -34,31 +34,29 @@
 */
 
 .ai-chat-header {
+    flex: 0 0 auto;
+
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
 
-    padding: 22px 26px;
+    padding: 18px 20px;
 
     border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .ai-chat-header > div {
     display: flex;
-
     align-items: center;
 
-    gap: 14px;
+    gap: 12px;
 }
 
 .ai-chat-icon {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
@@ -70,7 +68,7 @@
         #8b5cf6
     );
 
-    font-size: 22px;
+    font-size: 21px;
 }
 
 .ai-chat-header h2 {
@@ -78,7 +76,7 @@
 
     color: #f8fafc;
 
-    font-size: 18px;
+    font-size: 17px;
 }
 
 .ai-chat-header p {
@@ -86,7 +84,7 @@
 
     color: #94a3b8;
 
-    font-size: 13px;
+    font-size: 12px;
 }
 
 
@@ -98,12 +96,11 @@
 
 .ai-status {
     display: flex;
-
     align-items: center;
 
     gap: 7px;
 
-    padding: 7px 11px;
+    padding: 6px 10px;
 
     border-radius: 999px;
 
@@ -113,7 +110,7 @@
 
     color: #86efac;
 
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .ai-status-dot {
@@ -128,59 +125,161 @@
 
 /*
 |--------------------------------------------------------------------------
-| Messages
+| Messages Container
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+|
+| This area gets the scrollbar.
+| The header and input stay fixed.
 |--------------------------------------------------------------------------
 */
 
 .ai-messages {
-    flex: 1;
+    flex: 1 1 auto;
 
-    padding: 26px;
+    min-height: 0;
+
+    padding: 20px;
 
     overflow-y: auto;
+    overflow-x: hidden;
 
-    min-height: 430px;
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
 }
 
-.ai-message {
-    max-width: 78%;
 
-    margin-bottom: 20px;
+/*
+|--------------------------------------------------------------------------
+| Scrollbar
+|--------------------------------------------------------------------------
+*/
+
+.ai-messages::-webkit-scrollbar {
+    width: 7px;
+}
+
+.ai-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ai-messages::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+
+    border-radius: 999px;
+}
+
+.ai-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.4);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Message
+|--------------------------------------------------------------------------
+*/
+
+.ai-message {
+    width: fit-content;
+
+    max-width: 90%;
+
+    min-width: 0;
 }
 
 .ai-message-user {
-    margin-left: auto;
+    align-self: flex-end;
 }
 
 .ai-message-assistant {
-    margin-right: auto;
+    align-self: flex-start;
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Message Label
+|--------------------------------------------------------------------------
+*/
+
 .ai-message-label {
-    margin-bottom: 7px;
+    margin-bottom: 6px;
 
     color: #94a3b8;
 
-    font-size: 12px;
+    font-size: 11px;
 
     font-weight: 600;
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Message Content
+|--------------------------------------------------------------------------
+|
+| Long AI responses stay INSIDE this box.
+|--------------------------------------------------------------------------
+*/
+
 .ai-message-content {
-    padding: 13px 16px;
+    max-width: 100%;
+
+    max-height: 380px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 14px 16px;
 
     border-radius: 14px;
 
     color: #e2e8f0;
 
-    line-height: 1.6;
+    line-height: 1.65;
 
     white-space: pre-wrap;
 
-    background: rgba(30, 41, 59, 0.8);
+    overflow-wrap: anywhere;
+
+    word-break: break-word;
+
+    background: rgba(30, 41, 59, 0.85);
 
     border: 1px solid rgba(148, 163, 184, 0.1);
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| Message Content Scrollbar
+|--------------------------------------------------------------------------
+*/
+
+.ai-message-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-message-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ai-message-content::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+
+    border-radius: 999px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| User Message
+|--------------------------------------------------------------------------
+*/
 
 .ai-message-user .ai-message-content {
     background: linear-gradient(
@@ -202,7 +301,9 @@
 */
 
 .ai-empty {
-    height: 400px;
+    flex: 1;
+
+    min-height: 0;
 
     display: flex;
 
@@ -232,7 +333,7 @@
 }
 
 .ai-empty p {
-    max-width: 480px;
+    max-width: 400px;
 
     margin: 0;
 
@@ -249,9 +350,17 @@
 */
 
 .ai-typing {
+    padding: 13px 16px;
+
     color: #94a3b8;
 
     font-size: 14px;
+
+    background: rgba(30, 41, 59, 0.8);
+
+    border-radius: 14px;
+
+    border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 
@@ -259,16 +368,23 @@
 |--------------------------------------------------------------------------
 | Input
 |--------------------------------------------------------------------------
+|
+| This stays at the bottom.
+|--------------------------------------------------------------------------
 */
 
 .ai-input-area {
+    flex: 0 0 auto;
+
     display: flex;
 
     gap: 10px;
 
-    padding: 18px 22px;
+    padding: 14px 18px;
 
     border-top: 1px solid rgba(148, 163, 184, 0.12);
+
+    background: rgba(15, 23, 42, 0.98);
 }
 
 .ai-input-area input {
@@ -276,7 +392,7 @@
 
     min-width: 0;
 
-    padding: 14px 16px;
+    padding: 13px 15px;
 
     border-radius: 12px;
 
@@ -300,7 +416,9 @@
 }
 
 .ai-input-area button {
-    padding: 0 20px;
+    flex: 0 0 auto;
+
+    padding: 0 18px;
 
     border: none;
 
@@ -317,6 +435,15 @@
     font-weight: 600;
 
     cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.ai-input-area button:hover:not(:disabled) {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 20px rgba(79, 70, 229, 0.3);
 }
 
 .ai-input-area button:disabled {
@@ -333,13 +460,17 @@
 */
 
 .ai-chat-footer {
-    padding: 10px;
+    flex: 0 0 auto;
+
+    padding: 8px;
 
     text-align: center;
 
     color: #64748b;
 
-    font-size: 11px;
+    font-size: 10px;
+
+    background: rgba(15, 23, 42, 0.98);
 }
 
 
@@ -352,13 +483,11 @@
 @media (max-width: 650px) {
 
     .ai-chat {
-        min-height: 600px;
-
         border-radius: 14px;
     }
 
     .ai-chat-header {
-        padding: 18px;
+        padding: 15px;
     }
 
     .ai-status {
@@ -366,15 +495,19 @@
     }
 
     .ai-messages {
-        padding: 18px;
+        padding: 15px;
     }
 
     .ai-message {
-        max-width: 90%;
+        max-width: 94%;
+    }
+
+    .ai-message-content {
+        max-height: 300px;
     }
 
     .ai-input-area {
-        padding: 14px;
+        padding: 12px;
     }
 
     .ai-input-area button {

@@ -12,7 +12,6 @@ import {
 
 import ProjectDetails from "./ProjectDetails.jsx";
 
-import AIChat from "../components/AIChat.jsx";
 
 
 import "../styles/dashboard.css";
@@ -1124,7 +1123,6 @@ const Dashboard = () => {
             </main>
             {/*Ai ASsistant*/}                   
 
-            <AIChat projectId={selectedProjectId} />
 
         </div>
 
