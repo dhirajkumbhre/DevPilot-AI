@@ -39,6 +39,8 @@
 
 import { useEffect, useState } from "react";
 
+import AIChat from "../components/AIChat.jsx";
+
 /*
 |--------------------------------------------------------------------------
 | Project API Services
@@ -1029,122 +1031,10 @@ const ProjectWorkspace = ({
                     RIGHT AI PANEL
                 ====================================================== */}
 
-                <aside
-                    style={
-                        styles.aiPanel
-                    }
-                >
-
-                    <div
-                        style={
-                            styles.aiHeader
-                        }
-                    >
-
-                        <div>
-                            🤖 DevPilot AI
-                        </div>
-
-                        <span
-                            style={
-                                styles.aiStatus
-                            }
-                        >
-                            Online
-                        </span>
-
-                    </div>
-
-
-                    <div
-                        style={
-                            styles.aiContent
-                        }
-                    >
-
-                        <div
-                            style={
-                                styles.aiWelcome
-                            }
-                        >
-
-                            <div
-                                style={
-                                    styles.aiLargeIcon
-                                }
-                            >
-                                🤖
-                            </div>
-
-                            <h2>
-                                AI Developer
-                                Assistant
-                            </h2>
-
-                            <p>
-                                Your AI assistant
-                                will understand
-                                your project,
-                                files, code and
-                                errors.
-                            </p>
-
-                        </div>
-
-
-                        <div
-                            style={
-                                styles.aiSuggestions
-                            }
-                        >
-
-                            <div
-                                style={
-                                    styles.suggestion
-                                }
-                            >
-                                💡 Explain this
-                                code
-                            </div>
-
-                            <div
-                                style={
-                                    styles.suggestion
-                                }
-                            >
-                                🐛 Find bugs
-                            </div>
-
-                            <div
-                                style={
-                                    styles.suggestion
-                                }
-                            >
-                                ✨ Improve code
-                            </div>
-
-                            <div
-                                style={
-                                    styles.suggestion
-                                }
-                            >
-                                🧠 Ask about project
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            style={
-                                styles.aiComingSoon
-                            }
-                        >
-                            AI chat will be
-                            connected next.
-                        </div>
-
-                    </div>
-
+                <aside style={styles.aiPanel}>
+                    <AIChat
+                        projectId={project?._id}
+                    />
                 </aside>
 
             </main>

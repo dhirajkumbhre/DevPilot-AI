@@ -5,8 +5,7 @@
 |
 | This service communicates with our locally running Ollama AI.
 |
-| It also retrieves project information from MongoDB so that
-| DevPilot AI can understand which project the user is asking about.
+| DevPilot can also read the files belonging to the selected project.
 |
 | Flow:
 |
@@ -14,7 +13,9 @@
 |     ↓
 | AI Service
 |     ↓
-| MongoDB Project
+| Verify Project Ownership
+|     ↓
+| Load Project Files
 |     ↓
 | Build AI Context
 |     ↓
@@ -26,6 +27,7 @@
 */
 
 import Project from "../models/project.model.js";
+import ProjectFile from "../models/projectFile.model.js";
 
 
 const OLLAMA_URL =
@@ -44,6 +46,9 @@ const OLLAMA_URL =
 |
 | projectId
 |     The currently selected project.
+|
+| userId
+|     The authenticated user's ID.
 |
 |--------------------------------------------------------------------------
 */
@@ -65,18 +70,16 @@ export const generateAIResponse = async ({
 
     /*
     ----------------------------------------------------------------------
-    If a project ID was provided, retrieve the project.
+    If a project was selected
     ----------------------------------------------------------------------
     */
 
     if (projectId) {
 
         /*
-        IMPORTANT:
-        We check BOTH project ID and owner.
-
-        This prevents User A from asking the AI about
-        User B's project by manually changing the project ID.
+        --------------------------------------------------------------
+        Verify that the project belongs to the logged-in user.
+        --------------------------------------------------------------
         */
 
         const project = await Project.findOne({
@@ -89,8 +92,8 @@ export const generateAIResponse = async ({
 
 
         /*
-        If the project doesn't exist or doesn't belong
-        to the authenticated user, stop the request.
+        Project doesn't exist or doesn't belong
+        to the authenticated user.
         */
 
         if (!project) {
@@ -103,17 +106,68 @@ export const generateAIResponse = async ({
 
 
         /*
-        Build information that will be given to the AI.
+        --------------------------------------------------------------
+        Load project files
+        --------------------------------------------------------------
+        */
+
+        const projectFiles =
+            await ProjectFile.find({
+
+                project: projectId,
+
+            })
+            .select("path content")
+            .sort({
+                path: 1,
+            });
+
+
+        /*
+        --------------------------------------------------------------
+        Convert files into AI-readable context
+        --------------------------------------------------------------
+        */
+
+        const filesContext =
+            projectFiles
+                .map((file) => {
+
+                    return `
+==================================================
+FILE: ${file.path}
+==================================================
+
+${file.content}
+`;
+
+                })
+                .join("\n");
+
+
+        /*
+        --------------------------------------------------------------
+        Build complete project context
+        --------------------------------------------------------------
         */
 
         projectContext = `
-Project Information:
+
+PROJECT INFORMATION
+===================
 
 Project Name:
 ${project.name}
 
 Project Description:
 ${project.description || "No description provided."}
+
+
+PROJECT FILES
+=============
+
+${filesContext || "No project files found."}
+
 `;
     }
 
@@ -125,40 +179,79 @@ ${project.description || "No description provided."}
     */
 
     const prompt = `
-You are DevPilot AI, an AI-powered developer assistant.
 
-Your job is to help developers understand, build,
-debug and improve their software projects.
+You are DevPilot AI.
+
+You are an AI-powered software development assistant.
+
+Your job is to help developers:
+
+- understand their projects
+- understand their code
+- debug problems
+- explain architecture
+- improve code
+- write code
+- review code
+- suggest improvements
+
 
 ${projectContext}
 
-Developer Question:
+
+DEVELOPER QUESTION
+==================
+
 ${message}
 
-Instructions:
 
-1. Answer the developer's question clearly.
-2. Use the project information when it is relevant.
-3. Do not invent project details that were not provided.
-4. If you need more information, clearly say what information is missing.
-5. Give practical explanations suitable for a developer.
-6. If code is requested, provide useful code examples.
+IMPORTANT INSTRUCTIONS
+======================
+
+1. Use the provided project information and files
+   when answering project-related questions.
+
+2. If the developer asks about their code,
+   base your answer on the actual project files
+   provided above.
+
+3. Do NOT invent files, functions, variables,
+   technologies, or project features that are
+   not present in the provided context.
+
+4. If the information needed to answer the question
+   is not available in the provided project files,
+   clearly say that the relevant information
+   is not available.
+
+5. Give practical developer-focused answers.
+
+6. When explaining code, mention the relevant
+   file path when possible.
+
+7. When providing code, clearly explain where
+   the code should be placed.
+
 `;
 
 
     /*
     ----------------------------------------------------------------------
-    Send request to Ollama.
+    Send request to Ollama
     ----------------------------------------------------------------------
     */
 
     const response = await fetch(
         OLLAMA_URL,
         {
+
             method: "POST",
 
             headers: {
-                "Content-Type": "application/json",
+
+                "Content-Type":
+                    "application/json",
+
             },
 
             body: JSON.stringify({
@@ -178,6 +271,7 @@ Instructions:
                         role: "user",
 
                         content: prompt,
+
                     },
 
                 ],
@@ -185,13 +279,14 @@ Instructions:
                 stream: false,
 
             }),
+
         }
     );
 
 
     /*
     ----------------------------------------------------------------------
-    Handle Ollama errors.
+    Handle Ollama errors
     ----------------------------------------------------------------------
     */
 
@@ -206,7 +301,7 @@ Instructions:
 
     /*
     ----------------------------------------------------------------------
-    Convert Ollama response to JavaScript.
+    Convert Ollama response
     ----------------------------------------------------------------------
     */
 
@@ -216,9 +311,10 @@ Instructions:
 
     /*
     ----------------------------------------------------------------------
-    Return AI response.
+    Return AI response
     ----------------------------------------------------------------------
     */
 
     return data.message.content;
+
 };
