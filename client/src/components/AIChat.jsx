@@ -5,7 +5,6 @@
 |
 | AI assistant for the currently selected project and file.
 |
-|--------------------------------------------------------------------------
 */
 
 import { useState } from "react";
@@ -21,16 +20,6 @@ import "../styles/ai-chat.css";
 |--------------------------------------------------------------------------
 | AI Chat Component
 |--------------------------------------------------------------------------
-|
-| Props:
-|
-| projectId
-|     ID of the currently selected project.
-|
-| fileId
-|     ID of the currently selected file.
-|
-|--------------------------------------------------------------------------
 */
 
 const AIChat = ({
@@ -39,9 +28,9 @@ const AIChat = ({
 }) => {
 
     /*
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Messages
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     const [messages, setMessages] =
@@ -49,9 +38,9 @@ const AIChat = ({
 
 
     /*
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Input
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     const [input, setInput] =
@@ -59,9 +48,9 @@ const AIChat = ({
 
 
     /*
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Loading
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     const [loading, setLoading] =
@@ -69,9 +58,17 @@ const AIChat = ({
 
 
     /*
-    ----------------------------------------------------------------------
-    | Send Message
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
+    | Send Prompt
+    |--------------------------------------------------------------------------
+    |
+    | This is the common function used by:
+    |
+    | - Normal chat
+    | - Explain Code
+    | - Find Bugs
+    |
+    |--------------------------------------------------------------------------
     */
 
     const sendPrompt = async (prompt) => {
@@ -89,7 +86,7 @@ const AIChat = ({
 
 
         /*
-        Add user message to chat.
+        Add user's message.
         */
 
         setMessages(
@@ -114,8 +111,7 @@ const AIChat = ({
         try {
 
             /*
-            Send project + file + question
-            to the backend.
+            Send request to backend.
             */
 
             const aiResponse =
@@ -149,7 +145,12 @@ const AIChat = ({
                 ]
             );
 
+
         } catch (error) {
+
+            /*
+            Show error inside chat.
+            */
 
             setMessages(
                 (previousMessages) => [
@@ -176,9 +177,9 @@ const AIChat = ({
 
 
     /*
-    ----------------------------------------------------------------------
-    | Normal Chat Message
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
+    | Normal Chat
+    |--------------------------------------------------------------------------
     */
 
     const handleSendMessage =
@@ -189,6 +190,7 @@ const AIChat = ({
             const message =
                 input.trim();
 
+
             if (
                 !message ||
                 loading ||
@@ -198,19 +200,21 @@ const AIChat = ({
                 return;
             }
 
+
             await sendPrompt(message);
         };
 
 
     /*
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Explain Code
-    ----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     const handleExplainCode = () => {
 
         sendPrompt(`
+
 Explain the currently selected file in detail.
 
 Please cover:
@@ -222,7 +226,58 @@ Please cover:
 5. Important concepts a developer should understand.
 
 Use the actual code from the selected file.
+
 Do not invent information that is not present in the file.
+
+        `);
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find Bugs
+    |--------------------------------------------------------------------------
+    |
+    | Ask the AI to inspect the selected file for problems.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    const handleFindBugs = () => {
+
+        sendPrompt(`
+
+Analyze the currently selected file for bugs and potential problems.
+
+Please carefully inspect the actual code.
+
+Look for:
+
+1. Syntax errors.
+2. Logic errors.
+3. Runtime errors.
+4. Incorrect API usage.
+5. Undefined variables or functions.
+6. Incorrect React usage if this is a React file.
+7. Potential security problems where relevant.
+8. Unnecessary or suspicious code.
+9. Problems that could cause unexpected behavior.
+
+For every issue you find:
+
+- Explain what is wrong.
+- Mention the relevant code or line when possible.
+- Explain why it is a problem.
+- Suggest a practical fix.
+
+If you do not find any clear bugs, say:
+
+"No obvious bugs found."
+
+Do not invent bugs.
+
+Base your answer only on the actual selected file.
+
         `);
     };
 
@@ -294,6 +349,19 @@ Do not invent information that is not present in the file.
                     }
                 >
                     ✨ Explain Code
+                </button>
+
+
+                <button
+                    type="button"
+                    onClick={handleFindBugs}
+                    disabled={
+                        loading ||
+                        !projectId ||
+                        !fileId
+                    }
+                >
+                    🐛 Find Bugs
                 </button>
 
             </div>
