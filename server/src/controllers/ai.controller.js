@@ -61,7 +61,8 @@ export const chatWithAI = async (req, res) => {
 
         const {
             message,
-            projectId
+            projectId,
+            fileId,
         } = req.body;
 
 
@@ -103,6 +104,8 @@ export const chatWithAI = async (req, res) => {
             message,
 
             projectId,
+
+            fileId,
 
             userId:req.user.userId,
 

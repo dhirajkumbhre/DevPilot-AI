@@ -1033,11 +1033,16 @@ const ProjectWorkspace = ({
                     RIGHT AI PANEL
                 ====================================================== */}
 
-                <aside style={styles.aiPanel}>
-                    <AIChat
-                        projectId={project?._id}
-                    />
-                </aside>
+{/* ======================================================
+    RIGHT AI PANEL
+====================================================== */}
+
+<aside style={styles.aiPanel}>
+    <AIChat
+        projectId={project?._id}
+        fileId={selectedFile?._id}
+    />
+</aside>
 
             </main>
 

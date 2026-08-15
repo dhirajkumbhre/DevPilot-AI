@@ -32,6 +32,7 @@ const API_URL = "http://localhost:5000/api/ai";
 |
 | - user's message
 | - selected project ID
+| - selected file ID
 | - authentication token
 |
 |--------------------------------------------------------------------------
@@ -40,6 +41,7 @@ const API_URL = "http://localhost:5000/api/ai";
 export const sendMessageToAI = async ({
     message,
     projectId,
+    fileId,
 }) => {
 
     /*
@@ -72,6 +74,8 @@ export const sendMessageToAI = async ({
                 message,
 
                 projectId,
+
+                fileId,
 
             }),
         }

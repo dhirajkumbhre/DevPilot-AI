@@ -3,7 +3,7 @@
 | DevPilot AI Chat
 |--------------------------------------------------------------------------
 |
-| AI assistant for the currently selected project.
+| AI assistant for the currently selected project and file.
 |
 |--------------------------------------------------------------------------
 */
@@ -27,14 +27,20 @@ import "../styles/ai-chat.css";
 | projectId
 |     ID of the currently selected project.
 |
+| fileId
+|     ID of the currently selected file.
+|
 |--------------------------------------------------------------------------
 */
 
-const AIChat = ({ projectId }) => {
+const AIChat = ({
+    projectId,
+    fileId,
+}) => {
 
     /*
     ----------------------------------------------------------------------
-    Messages
+    | Messages
     ----------------------------------------------------------------------
     */
 
@@ -44,7 +50,7 @@ const AIChat = ({ projectId }) => {
 
     /*
     ----------------------------------------------------------------------
-    Input
+    | Input
     ----------------------------------------------------------------------
     */
 
@@ -54,7 +60,7 @@ const AIChat = ({ projectId }) => {
 
     /*
     ----------------------------------------------------------------------
-    Loading
+    | Loading
     ----------------------------------------------------------------------
     */
 
@@ -64,7 +70,7 @@ const AIChat = ({ projectId }) => {
 
     /*
     ----------------------------------------------------------------------
-    Send Message
+    | Send Message
     ----------------------------------------------------------------------
     */
 
@@ -96,7 +102,7 @@ const AIChat = ({ projectId }) => {
 
             /*
             ------------------------------------------------------------------
-            Add user's message to the UI immediately.
+            | Add user's message to the UI immediately.
             ------------------------------------------------------------------
             */
 
@@ -133,7 +139,7 @@ const AIChat = ({ projectId }) => {
 
                 /*
                 ----------------------------------------------------------------
-                Send message + project ID to backend.
+                | Send message + project ID + file ID to backend.
                 ----------------------------------------------------------------
                 */
 
@@ -144,12 +150,14 @@ const AIChat = ({ projectId }) => {
 
                         projectId,
 
+                        fileId,
+
                     });
 
 
                 /*
                 ----------------------------------------------------------------
-                Add AI response.
+                | Add AI response.
                 ----------------------------------------------------------------
                 */
 
@@ -173,7 +181,7 @@ const AIChat = ({ projectId }) => {
 
                 /*
                 ----------------------------------------------------------------
-                Show error.
+                | Show error.
                 ----------------------------------------------------------------
                 */
 
@@ -199,6 +207,7 @@ const AIChat = ({ projectId }) => {
                 setLoading(false);
 
             }
+
         };
 
 
@@ -278,8 +287,9 @@ const AIChat = ({ projectId }) => {
 
                         <p>
                             Ask me about this project,
-                            your code, debugging,
-                            React, Node.js or JavaScript.
+                            the selected file,
+                            debugging, React,
+                            Node.js or JavaScript.
                         </p>
 
                     </div>
@@ -348,6 +358,7 @@ const AIChat = ({ projectId }) => {
 
                 )}
 
+
             </div>
 
 
@@ -375,9 +386,11 @@ const AIChat = ({ projectId }) => {
                     }
 
                     placeholder={
-                        projectId
-                            ? "Ask about this project..."
-                            : "Select a project first..."
+                        !projectId
+                            ? "Select a project first..."
+                            : !fileId
+                                ? "Select a file first..."
+                                : "Ask about this file..."
                     }
 
                     disabled={

@@ -5,7 +5,11 @@
 |
 | This service communicates with our locally running Ollama AI.
 |
-| DevPilot can also read the files belonging to the selected project.
+| DevPilot can understand:
+|
+| 1. The selected project
+| 2. The selected file
+| 3. The actual code inside that file
 |
 | Flow:
 |
@@ -15,7 +19,7 @@
 |     ↓
 | Verify Project Ownership
 |     ↓
-| Load Project Files
+| Find Selected File
 |     ↓
 | Build AI Context
 |     ↓
@@ -42,13 +46,16 @@ const OLLAMA_URL =
 | Receives:
 |
 | message
-|     The user's question.
+|     Developer's question.
 |
 | projectId
-|     The currently selected project.
+|     Currently opened project.
+|
+| fileId
+|     Currently selected file.
 |
 | userId
-|     The authenticated user's ID.
+|     Authenticated user's ID.
 |
 |--------------------------------------------------------------------------
 */
@@ -56,12 +63,13 @@ const OLLAMA_URL =
 export const generateAIResponse = async ({
     message,
     projectId,
+    fileId,
     userId,
 }) => {
 
     /*
     ----------------------------------------------------------------------
-    Project Context
+    | Project Context
     ----------------------------------------------------------------------
     */
 
@@ -70,7 +78,16 @@ export const generateAIResponse = async ({
 
     /*
     ----------------------------------------------------------------------
-    If a project was selected
+    | File Context
+    ----------------------------------------------------------------------
+    */
+
+    let fileContext = "";
+
+
+    /*
+    ----------------------------------------------------------------------
+    | Verify Project
     ----------------------------------------------------------------------
     */
 
@@ -78,7 +95,7 @@ export const generateAIResponse = async ({
 
         /*
         --------------------------------------------------------------
-        Verify that the project belongs to the logged-in user.
+        Find project belonging to authenticated user.
         --------------------------------------------------------------
         */
 
@@ -92,8 +109,9 @@ export const generateAIResponse = async ({
 
 
         /*
-        Project doesn't exist or doesn't belong
-        to the authenticated user.
+        --------------------------------------------------------------
+        Project not found.
+        --------------------------------------------------------------
         */
 
         if (!project) {
@@ -107,52 +125,11 @@ export const generateAIResponse = async ({
 
         /*
         --------------------------------------------------------------
-        Load project files
-        --------------------------------------------------------------
-        */
-
-        const projectFiles =
-            await ProjectFile.find({
-
-                project: projectId,
-
-            })
-            .select("path content")
-            .sort({
-                path: 1,
-            });
-
-
-        /*
-        --------------------------------------------------------------
-        Convert files into AI-readable context
-        --------------------------------------------------------------
-        */
-
-        const filesContext =
-            projectFiles
-                .map((file) => {
-
-                    return `
-==================================================
-FILE: ${file.path}
-==================================================
-
-${file.content}
-`;
-
-                })
-                .join("\n");
-
-
-        /*
-        --------------------------------------------------------------
-        Build complete project context
+        Build project information.
         --------------------------------------------------------------
         */
 
         projectContext = `
-
 PROJECT INFORMATION
 ===================
 
@@ -161,20 +138,86 @@ ${project.name}
 
 Project Description:
 ${project.description || "No description provided."}
+`;
 
 
-PROJECT FILES
+        /*
+        ------------------------------------------------------------------
+        | Selected File
+        ------------------------------------------------------------------
+        */
+
+        if (fileId) {
+
+            /*
+            --------------------------------------------------------------
+            Find the selected file.
+            --------------------------------------------------------------
+
+            IMPORTANT:
+
+            We check BOTH:
+
+            1. fileId
+            2. projectId
+
+            This prevents a user from requesting a file
+            belonging to another project.
+            --------------------------------------------------------------
+            */
+
+            const file = await ProjectFile.findOne({
+
+                _id: fileId,
+
+                project: projectId,
+
+            });
+
+
+            /*
+            --------------------------------------------------------------
+            File not found.
+            --------------------------------------------------------------
+            */
+
+            if (!file) {
+
+                throw new Error(
+                    "Project file not found"
+                );
+
+            }
+
+
+            /*
+            --------------------------------------------------------------
+            Build file context.
+            --------------------------------------------------------------
+            */
+
+            fileContext = `
+SELECTED FILE
 =============
 
-${filesContext || "No project files found."}
+File Path:
+${file.path}
 
+File Content:
+--------------------
+
+${file.content || "This file is empty."}
+
+--------------------
 `;
+        }
+
     }
 
 
     /*
     ----------------------------------------------------------------------
-    Build AI Prompt
+    | Build AI Prompt
     ----------------------------------------------------------------------
     */
 
@@ -199,6 +242,9 @@ Your job is to help developers:
 ${projectContext}
 
 
+${fileContext}
+
+
 DEVELOPER QUESTION
 ==================
 
@@ -208,36 +254,42 @@ ${message}
 IMPORTANT INSTRUCTIONS
 ======================
 
-1. Use the provided project information and files
-   when answering project-related questions.
+1. Use the provided project information when
+   answering project-related questions.
 
-2. If the developer asks about their code,
-   base your answer on the actual project files
-   provided above.
+2. If a selected file is provided, use its
+   actual content when answering questions
+   about that file.
 
 3. Do NOT invent files, functions, variables,
    technologies, or project features that are
    not present in the provided context.
 
-4. If the information needed to answer the question
-   is not available in the provided project files,
-   clearly say that the relevant information
-   is not available.
+4. If the developer asks about the selected file,
+   base your answer on the actual file content.
 
-5. Give practical developer-focused answers.
+5. If the information required to answer the
+   question is not available, clearly say so.
 
-6. When explaining code, mention the relevant
-   file path when possible.
+6. When explaining code, mention the file path
+   when possible.
 
-7. When providing code, clearly explain where
-   the code should be placed.
+7. When finding a bug, explain:
+   - what the problem is
+   - why it happens
+   - how to fix it
+
+8. When providing code changes, clearly explain
+   where the code should be placed.
+
+9. Keep the answer practical and developer-focused.
 
 `;
 
 
     /*
     ----------------------------------------------------------------------
-    Send request to Ollama
+    | Send Request To Ollama
     ----------------------------------------------------------------------
     */
 
@@ -264,7 +316,7 @@ IMPORTANT INSTRUCTIONS
                         role: "system",
 
                         content:
-                            "You are DevPilot AI, a helpful software development assistant.",
+                            "You are DevPilot AI, a helpful software development assistant that understands project code provided in the context.",
                     },
 
                     {
@@ -286,7 +338,7 @@ IMPORTANT INSTRUCTIONS
 
     /*
     ----------------------------------------------------------------------
-    Handle Ollama errors
+    | Handle Ollama Error
     ----------------------------------------------------------------------
     */
 
@@ -301,7 +353,7 @@ IMPORTANT INSTRUCTIONS
 
     /*
     ----------------------------------------------------------------------
-    Convert Ollama response
+    | Convert Ollama Response
     ----------------------------------------------------------------------
     */
 
@@ -311,7 +363,7 @@ IMPORTANT INSTRUCTIONS
 
     /*
     ----------------------------------------------------------------------
-    Return AI response
+    | Return AI Response
     ----------------------------------------------------------------------
     */
 
