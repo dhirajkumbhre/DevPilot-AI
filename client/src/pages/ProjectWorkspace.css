@@ -256,22 +256,21 @@
     color: #f0c85b;
 }
 
-.type-{} {
+.type-json {
     color: #8cb8ff;
 }
 
-.type-MD {
+.type-md {
     color: #8ee1b8;
 }
 
-.type-# {
+.type-js {
     color: #8cb8ff;
 }
 
-.type-<> {
+.type-error {
     color: #ff9d9d;
 }
-
 .file-path {
     overflow: hidden;
     text-overflow: ellipsis;
