@@ -205,15 +205,20 @@ const AIChat = ({
         };
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Explain Code
-    |--------------------------------------------------------------------------
-    */
 
-    const handleExplainCode = () => {
+        /*
+|--------------------------------------------------------------------------
+| Explain Code
+|--------------------------------------------------------------------------
+|
+| Ask the AI to explain the currently selected file.
+|
+|--------------------------------------------------------------------------
+*/
 
-        sendPrompt(`
+const handleExplainCode = () => {
+
+    sendPrompt(`
 
 Explain the currently selected file in detail.
 
@@ -229,23 +234,23 @@ Use the actual code from the selected file.
 
 Do not invent information that is not present in the file.
 
-        `);
-    };
+    `);
+};
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Find Bugs
-    |--------------------------------------------------------------------------
-    |
-    | Ask the AI to inspect the selected file for problems.
-    |
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Find Bugs
+|--------------------------------------------------------------------------
+|
+| Ask the AI to inspect the selected file for problems.
+|
+|--------------------------------------------------------------------------
+*/
 
-    const handleFindBugs = () => {
+const handleFindBugs = () => {
 
-        sendPrompt(`
+    sendPrompt(`
 
 Analyze the currently selected file for bugs and potential problems.
 
@@ -278,8 +283,120 @@ Do not invent bugs.
 
 Base your answer only on the actual selected file.
 
-        `);
-    };
+    `);
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Improve Code
+|--------------------------------------------------------------------------
+|
+| Ask the AI to suggest practical improvements
+| for the currently selected file.
+|
+|--------------------------------------------------------------------------
+*/
+
+const handleImproveCode = () => {
+
+    sendPrompt(`
+
+Analyze the currently selected file and suggest practical
+code improvements.
+
+Please inspect the actual code carefully.
+
+Focus on:
+
+1. Code quality.
+2. Readability.
+3. Maintainability.
+4. Performance where relevant.
+5. Error handling.
+6. Security where relevant.
+7. React best practices if this is a React file.
+8. JavaScript best practices if applicable.
+9. Removing unnecessary or duplicated code.
+
+For every important improvement:
+
+- Explain what should be improved.
+- Explain why the improvement is useful.
+- Show the suggested code when appropriate.
+- Clearly mention where the change should be made.
+
+Important:
+
+- Preserve the existing functionality.
+- Do not invent project features.
+- Do not invent dependencies.
+- Do not rewrite the entire project unnecessarily.
+- Base your suggestions only on the actual selected file.
+
+At the end, provide a short prioritized list of the
+most important improvements.
+
+    `);
+};
+
+/*
+|--------------------------------------------------------------------------
+| Generate Tests
+|--------------------------------------------------------------------------
+|
+| Ask the AI to generate useful test cases for the
+| currently selected file.
+|
+|--------------------------------------------------------------------------
+*/
+
+const handleGenerateTests = () => {
+
+    sendPrompt(`
+
+Analyze the currently selected file and generate
+appropriate tests for it.
+
+First understand the actual code in the selected file.
+
+Please provide:
+
+1. What should be tested.
+2. Important normal/expected cases.
+3. Edge cases.
+4. Error or invalid-input cases where relevant.
+5. A practical test implementation.
+
+Testing rules:
+
+- Use the actual code from the selected file.
+- Do not invent functions, variables, APIs, or dependencies.
+- Do not assume a testing library that is not already
+  visible in the project context.
+- If the project already uses a testing framework,
+  use that framework.
+- If no testing framework is visible, explain which
+  testing approach would be appropriate before showing
+  the test code.
+- Keep the tests focused on the selected file.
+- Explain what each important test verifies.
+
+At the end, provide:
+
+TEST SUMMARY
+
+- Main behavior tested
+- Edge cases tested
+- Error cases tested
+- Any additional tests recommended
+
+    `);
+};
+
+
+
+
 
 
     /*
@@ -364,6 +481,30 @@ Base your answer only on the actual selected file.
                     🐛 Find Bugs
                 </button>
 
+                <button
+    type="button"
+    onClick={handleImproveCode}
+    disabled={
+        loading ||
+        !projectId ||
+        !fileId
+    }
+>
+    🚀 Improve Code
+</button>
+
+
+<button
+    type="button"
+    onClick={handleGenerateTests}
+    disabled={
+        loading ||
+        !projectId ||
+        !fileId
+    }
+>
+    🧪 Generate Tests
+</button>
             </div>
 
 
