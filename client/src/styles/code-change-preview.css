@@ -1,0 +1,189 @@
+/*
+|--------------------------------------------------------------------------
+| DevPilot Code Change Preview
+|--------------------------------------------------------------------------
+*/
+
+.code-change-preview {
+    margin: 10px;
+
+    background: #0b0f14;
+
+    border: 1px solid #30363d;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Header
+|--------------------------------------------------------------------------
+*/
+
+.code-change-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 10px 12px;
+
+    background: #11161d;
+
+    border-bottom: 1px solid #252b33;
+}
+
+.code-change-header div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.code-change-header strong {
+    color: #e6edf3;
+
+    font-size: 12px;
+}
+
+.code-change-header span {
+    color: #8b949e;
+
+    font-size: 10px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Sections
+|--------------------------------------------------------------------------
+*/
+
+.code-change-section {
+    border-bottom: 1px solid #252b33;
+}
+
+.code-change-section-title {
+    padding: 7px 10px;
+
+    background: #11161d;
+
+    color: #8b949e;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Code
+|--------------------------------------------------------------------------
+*/
+
+.code-change-code {
+    margin: 0;
+
+    padding: 10px;
+
+    max-height: 180px;
+
+    overflow: auto;
+
+    background: #0b0f14;
+
+    color: #c9d1d9;
+
+    font-family:
+        "Cascadia Code",
+        "Fira Code",
+        Consolas,
+        monospace;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+    white-space: pre;
+
+    tab-size: 4;
+}
+
+.code-change-code.proposed {
+    color: #e6edf3;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+.code-change-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 7px;
+
+    padding: 9px 10px;
+
+    background: #11161d;
+}
+
+.code-change-actions button {
+    padding: 6px 10px;
+
+    border-radius: 6px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Reject
+|--------------------------------------------------------------------------
+*/
+
+.code-change-reject {
+    background: #151b23;
+
+    border: 1px solid #30363d;
+
+    color: #c9d1d9;
+}
+
+.code-change-reject:hover {
+    background: #1c2530;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Apply
+|--------------------------------------------------------------------------
+*/
+
+.code-change-apply {
+    background: #17351f;
+
+    border: 1px solid #2ea043;
+
+    color: #3fb950;
+}
+
+.code-change-apply:hover {
+    background: #1d4427;
+}

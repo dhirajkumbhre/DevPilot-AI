@@ -5,6 +5,7 @@
 |
 | AI assistant for the currently selected project and file.
 |
+|--------------------------------------------------------------------------
 */
 
 import { useState } from "react";
@@ -25,6 +26,8 @@ import "../styles/ai-chat.css";
 const AIChat = ({
     projectId,
     fileId,
+    fileContent,
+    onProposedChange,
 }) => {
 
     /*
@@ -62,11 +65,14 @@ const AIChat = ({
     | Send Prompt
     |--------------------------------------------------------------------------
     |
-    | This is the common function used by:
+    | Common function used by:
     |
     | - Normal chat
     | - Explain Code
     | - Find Bugs
+    | - Improve Code
+    | - Generate Tests
+    | - Code Review
     |
     |--------------------------------------------------------------------------
     */
@@ -74,6 +80,7 @@ const AIChat = ({
     const sendPrompt = async (prompt) => {
 
         const message = prompt.trim();
+
 
         if (
             !message ||
@@ -86,7 +93,9 @@ const AIChat = ({
 
 
         /*
-        Add user's message.
+        ------------------------------------------------------------------
+        | Add user's message
+        ------------------------------------------------------------------
         */
 
         setMessages(
@@ -111,7 +120,9 @@ const AIChat = ({
         try {
 
             /*
-            Send request to backend.
+            ------------------------------------------------------------------
+            | Send request to backend
+            ------------------------------------------------------------------
             */
 
             const aiResponse =
@@ -127,7 +138,9 @@ const AIChat = ({
 
 
             /*
-            Add AI response.
+            ------------------------------------------------------------------
+            | Add AI response
+            ------------------------------------------------------------------
             */
 
             setMessages(
@@ -137,9 +150,7 @@ const AIChat = ({
 
                     {
                         role: "assistant",
-
-                        content:
-                            aiResponse,
+                        content: aiResponse,
                     },
 
                 ]
@@ -147,10 +158,6 @@ const AIChat = ({
 
 
         } catch (error) {
-
-            /*
-            Show error inside chat.
-            */
 
             setMessages(
                 (previousMessages) => [
@@ -173,6 +180,7 @@ const AIChat = ({
             setLoading(false);
 
         }
+
     };
 
 
@@ -185,40 +193,36 @@ const AIChat = ({
     const handleSendMessage =
         async (event) => {
 
-            event.preventDefault();
+        event.preventDefault();
 
-            const message =
-                input.trim();
-
-
-            if (
-                !message ||
-                loading ||
-                !projectId ||
-                !fileId
-            ) {
-                return;
-            }
+        const message =
+            input.trim();
 
 
-            await sendPrompt(message);
-        };
+        if (
+            !message ||
+            loading ||
+            !projectId ||
+            !fileId
+        ) {
+            return;
+        }
 
 
+        await sendPrompt(message);
 
-        /*
-|--------------------------------------------------------------------------
-| Explain Code
-|--------------------------------------------------------------------------
-|
-| Ask the AI to explain the currently selected file.
-|
-|--------------------------------------------------------------------------
-*/
+    };
 
-const handleExplainCode = () => {
 
-    sendPrompt(`
+    /*
+    |--------------------------------------------------------------------------
+    | Explain Code
+    |--------------------------------------------------------------------------
+    */
+
+    const handleExplainCode = () => {
+
+        sendPrompt(`
 
 Explain the currently selected file in detail.
 
@@ -234,23 +238,20 @@ Use the actual code from the selected file.
 
 Do not invent information that is not present in the file.
 
-    `);
-};
+        `);
+
+    };
 
 
-/*
-|--------------------------------------------------------------------------
-| Find Bugs
-|--------------------------------------------------------------------------
-|
-| Ask the AI to inspect the selected file for problems.
-|
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Find Bugs
+    |--------------------------------------------------------------------------
+    */
 
-const handleFindBugs = () => {
+    const handleFindBugs = () => {
 
-    sendPrompt(`
+        sendPrompt(`
 
 Analyze the currently selected file for bugs and potential problems.
 
@@ -283,24 +284,20 @@ Do not invent bugs.
 
 Base your answer only on the actual selected file.
 
-    `);
-};
+        `);
+
+    };
 
 
-/*
-|--------------------------------------------------------------------------
-| Improve Code
-|--------------------------------------------------------------------------
-|
-| Ask the AI to suggest practical improvements
-| for the currently selected file.
-|
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Improve Code
+    |--------------------------------------------------------------------------
+    */
 
-const handleImproveCode = () => {
+    const handleImproveCode = () => {
 
-    sendPrompt(`
+        sendPrompt(`
 
 Analyze the currently selected file and suggest practical
 code improvements.
@@ -337,23 +334,20 @@ Important:
 At the end, provide a short prioritized list of the
 most important improvements.
 
-    `);
-};
+        `);
 
-/*
-|--------------------------------------------------------------------------
-| Generate Tests
-|--------------------------------------------------------------------------
-|
-| Ask the AI to generate useful test cases for the
-| currently selected file.
-|
-|--------------------------------------------------------------------------
-*/
+    };
 
-const handleGenerateTests = () => {
 
-    sendPrompt(`
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Tests
+    |--------------------------------------------------------------------------
+    */
+
+    const handleGenerateTests = () => {
+
+        sendPrompt(`
 
 Analyze the currently selected file and generate
 appropriate tests for it.
@@ -372,13 +366,11 @@ Testing rules:
 
 - Use the actual code from the selected file.
 - Do not invent functions, variables, APIs, or dependencies.
-- Do not assume a testing library that is not already
-  visible in the project context.
-- If the project already uses a testing framework,
-  use that framework.
-- If no testing framework is visible, explain which
-  testing approach would be appropriate before showing
-  the test code.
+- Do not assume a testing library that is not already visible
+  in the project context.
+- If the project already uses a testing framework, use that framework.
+- If no testing framework is visible, explain which testing approach
+  would be appropriate before showing the test code.
 - Keep the tests focused on the selected file.
 - Explain what each important test verifies.
 
@@ -391,25 +383,20 @@ TEST SUMMARY
 - Error cases tested
 - Any additional tests recommended
 
-    `);
-};
+        `);
+
+    };
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Code Review
+    |--------------------------------------------------------------------------
+    */
 
-/*
-|--------------------------------------------------------------------------
-| Code Review
-|--------------------------------------------------------------------------
-|
-| Ask the AI to perform a professional review of the
-| currently selected file.
-|
-|--------------------------------------------------------------------------
-*/
+    const handleCodeReview = () => {
 
-const handleCodeReview = () => {
-
-    sendPrompt(`
+        sendPrompt(`
 
 Perform a professional code review of the currently
 selected file.
@@ -450,7 +437,7 @@ Important rules:
 - Do not invent dependencies.
 - Do not invent project features.
 - Base the review only on the actual selected file.
-- Preserve the existing functionality in your recommendations.
+- Preserve existing functionality in your recommendations.
 
 Finish with:
 
@@ -468,15 +455,132 @@ Top Recommendations:
 Testing Recommendations:
 - Mention the most useful tests for this file.
 
-`);
-};
+        `);
 
-
+    };
 
 
     /*
     |--------------------------------------------------------------------------
-    | User Interface
+    | Generate Code Change
+    |--------------------------------------------------------------------------
+    |
+    | This is different from Improve Code.
+    |
+    | Improve Code = suggestions.
+    |
+    | Generate Change = complete replacement code that can be previewed.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    const handleGenerateChange = () => {
+
+        if (!fileContent) {
+            return;
+        }
+
+
+        sendPrompt(`
+
+You are preparing a code change for the currently selected file.
+
+The developer wants a practical improvement to this file.
+
+Analyze the actual file carefully.
+
+Return your answer in exactly this structure:
+
+CHANGE SUMMARY:
+Explain briefly what you are changing and why.
+
+PROPOSED CODE:
+START_CODE
+
+[PUT THE COMPLETE UPDATED FILE HERE]
+
+END_CODE
+
+IMPORTANT RULES:
+
+1. Return the COMPLETE updated file.
+2. Do not return only a snippet.
+3. Preserve existing functionality unless the requested change requires it.
+4. Do not invent dependencies.
+5. Do not invent project files.
+6. Do not remove working functionality unnecessarily.
+7. The code between START_CODE and END_CODE must be valid code.
+8. Do not put markdown fences around the code.
+9. Do not put explanations inside START_CODE and END_CODE.
+10. Base the change on the actual selected file.
+
+        `);
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detect Proposed Code
+    |--------------------------------------------------------------------------
+    |
+    | If an AI response contains START_CODE / END_CODE,
+    | extract the proposed complete file.
+    |--------------------------------------------------------------------------
+    */
+
+    const extractProposedCode = (content) => {
+
+        if (!content) {
+            return null;
+        }
+
+
+        const startMarker =
+            "START_CODE";
+
+        const endMarker =
+            "END_CODE";
+
+
+        const startIndex =
+            content.indexOf(startMarker);
+
+        const endIndex =
+            content.indexOf(endMarker);
+
+
+        if (
+            startIndex === -1 ||
+            endIndex === -1 ||
+            endIndex <= startIndex
+        ) {
+            return null;
+        }
+
+
+        const proposedCode =
+            content
+                .slice(
+                    startIndex + startMarker.length,
+                    endIndex
+                )
+                .trim();
+
+
+        if (!proposedCode) {
+            return null;
+        }
+
+
+        return proposedCode;
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | UI
     |--------------------------------------------------------------------------
     */
 
@@ -556,44 +660,59 @@ Testing Recommendations:
                     Debug
                 </button>
 
+
                 <button
-    type="button"
-    onClick={handleImproveCode}
-    disabled={
-        loading ||
-        !projectId ||
-        !fileId
-    }
->
-    Improve
-</button>
+                    type="button"
+                    onClick={handleImproveCode}
+                    disabled={
+                        loading ||
+                        !projectId ||
+                        !fileId
+                    }
+                >
+                    Improve
+                </button>
 
 
-<button
-    type="button"
-    onClick={handleGenerateTests}
-    disabled={
-        loading ||
-        !projectId ||
-        !fileId
-    }
->
-    Tests
-</button>
+                <button
+                    type="button"
+                    onClick={handleGenerateTests}
+                    disabled={
+                        loading ||
+                        !projectId ||
+                        !fileId
+                    }
+                >
+                    Tests
+                </button>
 
 
+                <button
+                    type="button"
+                    onClick={handleCodeReview}
+                    disabled={
+                        loading ||
+                        !projectId ||
+                        !fileId
+                    }
+                >
+                    Review
+                </button>
 
-<button
-    type="button"
-    onClick={handleCodeReview}
-    disabled={
-        loading ||
-        !projectId ||
-        !fileId
-    }
->
-    Review
-</button>
+
+                <button
+                    type="button"
+                    onClick={handleGenerateChange}
+                    disabled={
+                        loading ||
+                        !projectId ||
+                        !fileId ||
+                        !fileContent
+                    }
+                >
+                    Change
+                </button>
+
             </div>
 
 
@@ -626,42 +745,71 @@ Testing Recommendations:
 
 
                 {messages.map(
-                    (message, index) => (
+                    (message, index) => {
 
-                        <div
-                            key={index}
+                        const proposedCode =
+                            message.role === "assistant"
+                                ? extractProposedCode(
+                                    message.content
+                                )
+                                : null;
 
-                            className={
-                                message.role === "user"
 
-                                    ? "ai-message ai-message-user"
-
-                                    : "ai-message ai-message-assistant"
-                            }
-                        >
+                        return (
 
                             <div
-                                className="ai-message-label"
+                                key={index}
+                                className={
+                                    message.role === "user"
+                                        ? "ai-message ai-message-user"
+                                        : "ai-message ai-message-assistant"
+                                }
                             >
 
-                                {message.role === "user"
-                                    ? "You"
-                                    : "DevPilot AI"}
+                                <div
+                                    className="ai-message-label"
+                                >
+                                    {message.role === "user"
+                                        ? "You"
+                                        : "DevPilot AI"}
+                                </div>
+
+
+                                <div
+                                    className="ai-message-content"
+                                >
+                                    {message.content}
+                                </div>
+
+
+                                {proposedCode && (
+
+                                    <button
+                                        type="button"
+                                        className="ai-preview-change-button"
+                                        onClick={() => {
+
+                                            onProposedChange({
+
+                                                originalCode:
+                                                    fileContent,
+
+                                                proposedCode,
+
+                                            });
+
+                                        }}
+                                    >
+                                        Preview Change
+                                    </button>
+
+                                )}
 
                             </div>
 
+                        );
 
-                            <div
-                                className="ai-message-content"
-                            >
-
-                                {message.content}
-
-                            </div>
-
-                        </div>
-
-                    )
+                    }
                 )}
 
 
@@ -695,10 +843,7 @@ Testing Recommendations:
 
             <form
                 className="ai-input-area"
-
-                onSubmit={
-                    handleSendMessage
-                }
+                onSubmit={handleSendMessage}
             >
 
                 <input
@@ -761,6 +906,7 @@ Testing Recommendations:
         </section>
 
     );
+
 };
 
 

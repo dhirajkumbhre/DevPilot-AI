@@ -41,6 +41,8 @@ import { useEffect, useState } from "react";
 
 import AIChat from "../components/AIChat.jsx";
 
+import CodeChangePreview from "../components/CodeChangePreview.jsx";
+
 /*
 |--------------------------------------------------------------------------
 | Project API Services
@@ -108,6 +110,23 @@ const ProjectWorkspace = ({
 
     const [fileContent, setFileContent] =
         useState("");
+
+
+
+
+
+
+
+
+
+        /*
+|--------------------------------------------------------------------------
+| AI Proposed Change
+|--------------------------------------------------------------------------
+*/
+
+const [proposedChange, setProposedChange] =
+    useState(null);
 
 
     /*
@@ -331,6 +350,71 @@ const ProjectWorkspace = ({
 
     };
 
+
+    /*
+|--------------------------------------------------------------------------
+| AI Proposed Change
+|--------------------------------------------------------------------------
+*/
+
+const handleProposedChange = ({
+    originalCode,
+    proposedCode,
+}) => {
+
+    setProposedChange({
+
+        originalCode,
+
+        proposedCode,
+
+    });
+
+};
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Apply AI Change
+|--------------------------------------------------------------------------
+*/
+
+const handleApplyChange = () => {
+
+    if (!proposedChange) {
+        return;
+    }
+
+
+    setFileContent(
+        proposedChange.proposedCode
+    );
+
+
+    setSaveStatus("unsaved");
+
+    setSaveError("");
+
+
+    setProposedChange(null);
+
+};
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Reject AI Change
+|--------------------------------------------------------------------------
+*/
+
+const handleRejectChange = () => {
+
+    setProposedChange(null);
+
+};
 
     /*
     |--------------------------------------------------------------------------
@@ -1038,10 +1122,16 @@ const ProjectWorkspace = ({
 ====================================================== */}
 
 <aside style={styles.aiPanel}>
+
     <AIChat
         projectId={project?._id}
         fileId={selectedFile?._id}
+        fileContent={fileContent}
+        onProposedChange={
+            handleProposedChange
+        }
     />
+
 </aside>
 
             </main>
