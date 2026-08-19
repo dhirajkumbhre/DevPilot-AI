@@ -494,13 +494,13 @@ Testing Recommendations:
                 <div className="ai-chat-title">
 
                     <div className="ai-chat-icon">
-                        🚀
+                        AI
                     </div>
 
                     <div>
 
                         <h2>
-                            DevPilot AI
+                            DevPilot
                         </h2>
 
                         <p>
@@ -540,7 +540,7 @@ Testing Recommendations:
                         !fileId
                     }
                 >
-                    ✨ Explain Code
+                    Explain
                 </button>
 
 
@@ -553,7 +553,7 @@ Testing Recommendations:
                         !fileId
                     }
                 >
-                    🐛 Find Bugs
+                    Debug
                 </button>
 
                 <button
@@ -565,7 +565,7 @@ Testing Recommendations:
         !fileId
     }
 >
-    🚀 Improve Code
+    Improve
 </button>
 
 
@@ -578,7 +578,7 @@ Testing Recommendations:
         !fileId
     }
 >
-    🧪 Generate Tests
+    Tests
 </button>
 
 
@@ -592,7 +592,7 @@ Testing Recommendations:
         !fileId
     }
 >
-    🔎 Code Review
+    Review
 </button>
             </div>
 
@@ -608,7 +608,7 @@ Testing Recommendations:
                     <div className="ai-empty">
 
                         <div className="ai-empty-icon">
-                            ✨
+                            AI
                         </div>
 
                         <h3>
@@ -754,7 +754,7 @@ Testing Recommendations:
 
             <div className="ai-chat-footer">
 
-                🔒 Runs locally with Ollama
+                Runs locally with Ollama
 
             </div>
 
