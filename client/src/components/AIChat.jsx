@@ -396,6 +396,81 @@ TEST SUMMARY
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Code Review
+|--------------------------------------------------------------------------
+|
+| Ask the AI to perform a professional review of the
+| currently selected file.
+|
+|--------------------------------------------------------------------------
+*/
+
+const handleCodeReview = () => {
+
+    sendPrompt(`
+
+Perform a professional code review of the currently
+selected file.
+
+Analyze the actual code carefully.
+
+Review the following areas:
+
+1. Correctness
+2. Code quality
+3. Readability
+4. Maintainability
+5. Error handling
+6. Security
+7. Performance
+8. Architecture and design
+9. Testing
+10. Potential technical debt
+
+For every important issue:
+
+- Give it a severity level.
+- Explain what the problem is.
+- Explain why it matters.
+- Suggest a practical improvement.
+- Mention the relevant code or section when possible.
+
+Use these severity levels:
+
+CRITICAL
+HIGH
+MEDIUM
+LOW
+
+Important rules:
+
+- Do not invent problems.
+- Do not invent dependencies.
+- Do not invent project features.
+- Base the review only on the actual selected file.
+- Preserve the existing functionality in your recommendations.
+
+Finish with:
+
+OVERALL REVIEW
+
+Strengths:
+- List the strongest parts of the code.
+
+Most Important Issues:
+- List the most important problems found.
+
+Top Recommendations:
+- List the three most valuable improvements.
+
+Testing Recommendations:
+- Mention the most useful tests for this file.
+
+`);
+};
+
 
 
 
@@ -504,6 +579,20 @@ TEST SUMMARY
     }
 >
     🧪 Generate Tests
+</button>
+
+
+
+<button
+    type="button"
+    onClick={handleCodeReview}
+    disabled={
+        loading ||
+        !projectId ||
+        !fileId
+    }
+>
+    🔎 Code Review
 </button>
             </div>
 
