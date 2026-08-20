@@ -2,10 +2,6 @@
 |--------------------------------------------------------------------------
 | DevPilot AI Chat
 |--------------------------------------------------------------------------
-|
-| Professional developer-tool interface.
-|
-|--------------------------------------------------------------------------
 */
 
 .ai-chat {
@@ -18,15 +14,16 @@
     min-height: 0;
     max-height: 100%;
 
-    background: #0b0f14;
+    background: rgba(17, 19, 21, 0.96);
 
-    border: 1px solid #252b33;
+    border: 1px solid rgba(148, 163, 184, 0.16);
 
-    border-radius: 10px;
+    border-radius: 20px;
 
     overflow: hidden;
 
-    color: #e6edf3;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 
@@ -43,53 +40,51 @@
     justify-content: space-between;
     align-items: center;
 
-    padding: 14px 16px;
+    padding: 18px 20px;
 
-    background: #11161d;
-
-    border-bottom: 1px solid #252b33;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .ai-chat-header > div {
     display: flex;
     align-items: center;
 
-    gap: 10px;
+    gap: 12px;
 }
 
 .ai-chat-icon {
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 7px;
+    border-radius: 12px;
 
-    background: #172b46;
+    background: #4f8cff;
 
-    color: #58a6ff;
+    color: #ffffff;
 
-    font-size: 17px;
+    font-size: 13px;
+
+    font-weight: 700;
 }
 
 .ai-chat-header h2 {
     margin: 0;
 
-    color: #e6edf3;
+    color: #e6e8eb;
 
-    font-size: 15px;
-
-    font-weight: 600;
+    font-size: 17px;
 }
 
 .ai-chat-header p {
-    margin: 3px 0 0;
+    margin: 4px 0 0;
 
-    color: #8b949e;
+    color: #9aa1aa;
 
-    font-size: 11px;
+    font-size: 12px;
 }
 
 
@@ -101,29 +96,26 @@
 
 .ai-status {
     display: flex;
-
     align-items: center;
 
-    gap: 6px;
+    gap: 7px;
 
-    padding: 5px 8px;
+    padding: 6px 10px;
 
-    border-radius: 6px;
+    border-radius: 999px;
 
     background: rgba(63, 185, 80, 0.08);
 
-    border: 1px solid rgba(63, 185, 80, 0.18);
+    border: 1px solid rgba(63, 185, 80, 0.2);
 
-    color: #3fb950;
+    color: #7ee787;
 
-    font-size: 10px;
-
-    font-weight: 500;
+    font-size: 11px;
 }
 
 .ai-status-dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
 
     border-radius: 50%;
 
@@ -135,11 +127,6 @@
 |--------------------------------------------------------------------------
 | Messages Container
 |--------------------------------------------------------------------------
-|
-| This area gets the main scrollbar.
-| Header, actions and input remain fixed.
-|
-|--------------------------------------------------------------------------
 */
 
 .ai-messages {
@@ -147,7 +134,7 @@
 
     min-height: 0;
 
-    padding: 18px;
+    padding: 20px;
 
     overflow-y: auto;
     overflow-x: hidden;
@@ -155,13 +142,13 @@
     display: flex;
     flex-direction: column;
 
-    gap: 15px;
+    gap: 16px;
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Main Scrollbar
+| Scrollbar
 |--------------------------------------------------------------------------
 */
 
@@ -174,13 +161,13 @@
 }
 
 .ai-messages::-webkit-scrollbar-thumb {
-    background: #30363d;
+    background: rgba(148, 163, 184, 0.25);
 
     border-radius: 999px;
 }
 
 .ai-messages::-webkit-scrollbar-thumb:hover {
-    background: #484f58;
+    background: rgba(148, 163, 184, 0.4);
 }
 
 
@@ -214,9 +201,9 @@
 */
 
 .ai-message-label {
-    margin-bottom: 5px;
+    margin-bottom: 6px;
 
-    color: #8b949e;
+    color: #9aa1aa;
 
     font-size: 11px;
 
@@ -228,10 +215,6 @@
 |--------------------------------------------------------------------------
 | Message Content
 |--------------------------------------------------------------------------
-|
-| Long AI responses remain inside their own scrollable box.
-|
-|--------------------------------------------------------------------------
 */
 
 .ai-message-content {
@@ -242,23 +225,23 @@
     overflow-y: auto;
     overflow-x: hidden;
 
-    padding: 12px 14px;
+    padding: 14px 16px;
 
-    border-radius: 8px;
+    border-radius: 14px;
 
-    background: #151b23;
+    color: #d6d9de;
 
-    border: 1px solid #252b33;
-
-    color: #c9d1d9;
-
-    line-height: 1.6;
+    line-height: 1.65;
 
     white-space: pre-wrap;
 
     overflow-wrap: anywhere;
 
     word-break: break-word;
+
+    background: rgba(30, 34, 39, 0.9);
+
+    border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 
@@ -277,13 +260,9 @@
 }
 
 .ai-message-content::-webkit-scrollbar-thumb {
-    background: #30363d;
+    background: rgba(148, 163, 184, 0.3);
 
     border-radius: 999px;
-}
-
-.ai-message-content::-webkit-scrollbar-thumb:hover {
-    background: #484f58;
 }
 
 
@@ -294,11 +273,11 @@
 */
 
 .ai-message-user .ai-message-content {
-    background: #172b46;
+    background: #315fba;
 
-    border: 1px solid #214d7a;
+    border: none;
 
-    color: #e6edf3;
+    color: #ffffff;
 }
 
 
@@ -327,21 +306,21 @@
 }
 
 .ai-empty-icon {
-    margin-bottom: 12px;
+    font-size: 18px;
 
-    color: #58a6ff;
+    font-weight: 700;
 
-    font-size: 28px;
+    color: #4f8cff;
+
+    margin-bottom: 14px;
 }
 
 .ai-empty h3 {
-    margin: 0 0 7px;
+    margin: 0 0 8px;
 
-    color: #e6edf3;
+    color: #e6e8eb;
 
-    font-size: 18px;
-
-    font-weight: 600;
+    font-size: 22px;
 }
 
 .ai-empty p {
@@ -349,11 +328,9 @@
 
     margin: 0;
 
-    color: #8b949e;
+    color: #9aa1aa;
 
-    line-height: 1.55;
-
-    font-size: 12px;
+    line-height: 1.6;
 }
 
 
@@ -364,27 +341,23 @@
 */
 
 .ai-typing {
-    padding: 11px 14px;
+    padding: 13px 16px;
 
-    color: #8b949e;
+    color: #9aa1aa;
 
-    font-size: 13px;
+    font-size: 14px;
 
-    background: #151b23;
+    background: rgba(30, 34, 39, 0.9);
 
-    border-radius: 8px;
+    border-radius: 14px;
 
-    border: 1px solid #252b33;
+    border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 
 /*
 |--------------------------------------------------------------------------
 | Input
-|--------------------------------------------------------------------------
-|
-| This stays fixed at the bottom.
-|
 |--------------------------------------------------------------------------
 */
 
@@ -393,13 +366,13 @@
 
     display: flex;
 
-    gap: 8px;
+    gap: 10px;
 
-    padding: 12px;
+    padding: 14px 18px;
 
-    background: #11161d;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
 
-    border-top: 1px solid #252b33;
+    background: rgba(17, 19, 21, 0.98);
 }
 
 .ai-input-area input {
@@ -407,57 +380,56 @@
 
     min-width: 0;
 
-    padding: 11px 12px;
+    padding: 13px 15px;
 
-    border-radius: 7px;
+    border-radius: 12px;
 
-    border: 1px solid #30363d;
+    border: 1px solid rgba(148, 163, 184, 0.2);
 
-    background: #0b0f14;
+    background: #111315;
 
-    color: #e6edf3;
+    color: #e6e8eb;
 
     outline: none;
 
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .ai-input-area input:focus {
-    border-color: #58a6ff;
-
-    box-shadow: 0 0 0 1px #58a6ff;
+    border-color: #4f8cff;
 }
 
 .ai-input-area input::placeholder {
-    color: #6e7681;
+    color: #69717c;
 }
 
 .ai-input-area button {
     flex: 0 0 auto;
 
-    padding: 0 15px;
+    padding: 0 18px;
 
-    border: 1px solid #214d7a;
+    border: none;
 
-    border-radius: 7px;
+    border-radius: 12px;
 
-    background: #172b46;
+    background: #4f8cff;
 
-    color: #58a6ff;
+    color: #ffffff;
 
     font-weight: 600;
 
     cursor: pointer;
 
-    transition:
-        background 0.15s ease,
-        border-color 0.15s ease;
+    transition: 0.2s ease;
 }
 
 .ai-input-area button:hover:not(:disabled) {
-    background: #1c385b;
+    background: #3f76d8;
 
-    border-color: #58a6ff;
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 20px rgba(79, 140, 255, 0.2);
 }
 
 .ai-input-area button:disabled {
@@ -476,17 +448,15 @@
 .ai-chat-footer {
     flex: 0 0 auto;
 
-    padding: 7px;
+    padding: 8px;
 
     text-align: center;
 
-    color: #6e7681;
+    color: #69717c;
 
     font-size: 10px;
 
-    background: #11161d;
-
-    border-top: 1px solid #252b33;
+    background: rgba(17, 19, 21, 0.98);
 }
 
 
@@ -499,90 +469,84 @@
 .ai-quick-actions {
     display: flex;
 
-    gap: 6px;
+    gap: 8px;
 
-    padding: 9px 12px;
+    padding: 12px 18px;
 
-    background: #0f141a;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 
-    border-bottom: 1px solid #252b33;
+    background: rgba(17, 19, 21, 0.75);
 
     overflow-x: auto;
-
-    scrollbar-width: thin;
 }
-
-
-/*
-|--------------------------------------------------------------------------
-| Quick Action Scrollbar
-|--------------------------------------------------------------------------
-*/
-
-.ai-quick-actions::-webkit-scrollbar {
-    height: 4px;
-}
-
-.ai-quick-actions::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.ai-quick-actions::-webkit-scrollbar-thumb {
-    background: #30363d;
-
-    border-radius: 999px;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Quick Action Buttons
-|--------------------------------------------------------------------------
-*/
 
 .ai-quick-actions button {
     flex-shrink: 0;
 
-    padding: 7px 10px;
+    padding: 8px 12px;
 
-    border: 1px solid #30363d;
+    border: 1px solid rgba(148, 163, 184, 0.18);
 
-    border-radius: 6px;
+    border-radius: 10px;
 
-    background: #151b23;
+    background: #1e2227;
 
-    color: #c9d1d9;
+    color: #b9c0c9;
 
-    font-size: 11px;
+    font-size: 12px;
 
-    font-weight: 500;
-
-    white-space: nowrap;
+    font-weight: 600;
 
     cursor: pointer;
 
-    transition:
-        background 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease;
+    transition: 0.2s ease;
 }
 
 .ai-quick-actions button:hover:not(:disabled) {
-    background: #1c2530;
+    border-color: #4f8cff;
 
-    border-color: #58a6ff;
+    color: #ffffff;
 
-    color: #58a6ff;
-}
-
-.ai-quick-actions button:active:not(:disabled) {
-    background: #172b46;
+    background: rgba(79, 140, 255, 0.1);
 }
 
 .ai-quick-actions button:disabled {
     opacity: 0.4;
 
     cursor: not-allowed;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| AI Preview Change Button
+|--------------------------------------------------------------------------
+*/
+
+.ai-preview-change-button {
+    margin-top: 8px;
+
+    padding: 7px 11px;
+
+    border: 1px solid #30353b;
+
+    border-radius: 6px;
+
+    background: #181b1f;
+
+    color: #6aa0ff;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.ai-preview-change-button:hover {
+    background: #1e2227;
+
+    border-color: #4f8cff;
 }
 
 
@@ -595,11 +559,11 @@
 @media (max-width: 650px) {
 
     .ai-chat {
-        border-radius: 8px;
+        border-radius: 14px;
     }
 
     .ai-chat-header {
-        padding: 12px;
+        padding: 15px;
     }
 
     .ai-status {
@@ -607,7 +571,7 @@
     }
 
     .ai-messages {
-        padding: 14px;
+        padding: 15px;
     }
 
     .ai-message {
@@ -619,10 +583,11 @@
     }
 
     .ai-input-area {
-        padding: 10px;
+        padding: 12px;
     }
 
     .ai-input-area button {
-        padding: 0 12px;
+        padding: 0 14px;
     }
+
 }
