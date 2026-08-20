@@ -1,67 +1,80 @@
 /*
 |--------------------------------------------------------------------------
-| File        : ProjectWorkspace.jsx
-| Project     : DevPilot AI
+| DevPilot Project Workspace
 |--------------------------------------------------------------------------
 |
-| Purpose:
 | Main development workspace for a project.
 |
-| Responsibilities:
+| Contains:
 |
-| 1. Load project files from MongoDB.
-| 2. Display files in the file explorer.
-| 3. Allow the user to edit file content.
-| 4. Save edited content back to MongoDB.
-| 5. Show real saving/success/error status.
-| 6. Allow the user to return to Project Details.
-|
-|--------------------------------------------------------------------------
-|
-| Architecture:
-|
-| ProjectWorkspace
-|       |
-|       ├── getProjectFiles()
-|       │        ↓
-|       │   Express API
-|       │        ↓
-|       │     MongoDB
-|       |
-|       └── updateProjectFile()
-|                ↓
-|           Express API
-|                ↓
-|              MongoDB
+| 1. Project file explorer
+| 2. Code editor
+| 3. File saving
+| 4. AI assistant
+| 5. AI code-change preview
 |
 |--------------------------------------------------------------------------
 */
 
 import { useEffect, useState } from "react";
 
-import AIChat from "../components/AIChat.jsx";
-
-import CodeChangePreview from "../components/CodeChangePreview.jsx";
-
-/*
-|--------------------------------------------------------------------------
-| Project API Services
-|--------------------------------------------------------------------------
-|
-| These functions contain the actual HTTP communication with our backend.
-|
-|--------------------------------------------------------------------------
-*/
-
 import {
     getProjectFiles,
     updateProjectFile,
 } from "../services/project.service.js";
 
+import AIChat from "../components/AIChat.jsx";
+
+import CodeChangePreview from "../components/CodeChangePreview.jsx";
+
+import "./ProjectWorkspace.css";
+
+import "../styles/code-change-preview.css";
+
 
 /*
 |--------------------------------------------------------------------------
-| ProjectWorkspace Component
+| File Icon
+|--------------------------------------------------------------------------
+*/
+
+const getFileIcon = (path = "") => {
+
+    if (
+        path.endsWith(".jsx") ||
+        path.endsWith(".js")
+    ) {
+        return "JS";
+    }
+
+
+    if (path.endsWith(".json")) {
+        return "{}";
+    }
+
+
+    if (path.endsWith(".md")) {
+        return "MD";
+    }
+
+
+    if (path.endsWith(".css")) {
+        return "#";
+    }
+
+
+    if (path.endsWith(".html")) {
+        return "<>";
+    }
+
+
+    return "•";
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Project Workspace
 |--------------------------------------------------------------------------
 */
 
@@ -74,22 +87,15 @@ const ProjectWorkspace = ({
     |--------------------------------------------------------------------------
     | Project Files
     |--------------------------------------------------------------------------
-    |
-    | Stores all files returned by the backend.
-    |
-    |--------------------------------------------------------------------------
     */
 
-    const [files, setFiles] = useState([]);
+    const [files, setFiles] =
+        useState([]);
 
 
     /*
     |--------------------------------------------------------------------------
     | Selected File
-    |--------------------------------------------------------------------------
-    |
-    | Stores the file currently opened in the editor.
-    |
     |--------------------------------------------------------------------------
     */
 
@@ -101,37 +107,15 @@ const ProjectWorkspace = ({
     |--------------------------------------------------------------------------
     | Editor Content
     |--------------------------------------------------------------------------
-    |
-    | This contains whatever is currently written
-    | inside the code editor.
-    |
-    |--------------------------------------------------------------------------
     */
 
     const [fileContent, setFileContent] =
         useState("");
 
 
-
-
-
-
-
-
-
-        /*
-|--------------------------------------------------------------------------
-| AI Proposed Change
-|--------------------------------------------------------------------------
-*/
-
-const [proposedChange, setProposedChange] =
-    useState(null);
-
-
     /*
     |--------------------------------------------------------------------------
-    | Loading State
+    | Loading
     |--------------------------------------------------------------------------
     */
 
@@ -141,7 +125,7 @@ const [proposedChange, setProposedChange] =
 
     /*
     |--------------------------------------------------------------------------
-    | Error State
+    | Workspace Error
     |--------------------------------------------------------------------------
     */
 
@@ -151,16 +135,7 @@ const [proposedChange, setProposedChange] =
 
     /*
     |--------------------------------------------------------------------------
-    | Save State
-    |--------------------------------------------------------------------------
-    |
-    | Possible values:
-    |
-    | ""
-    | "saving"
-    | "saved"
-    | "error"
-    |
+    | Save Status
     |--------------------------------------------------------------------------
     */
 
@@ -180,15 +155,22 @@ const [proposedChange, setProposedChange] =
 
     /*
     |--------------------------------------------------------------------------
-    | Load Project Files
+    | AI Proposed Change
     |--------------------------------------------------------------------------
     |
-    | Runs whenever the selected project changes.
+    | Stores the original and AI-generated code until
+    | the developer chooses Apply or Reject.
     |
-    | GET:
-    |
-    | /api/projects/:projectId/files
-    |
+    |--------------------------------------------------------------------------
+    */
+
+    const [proposedChange, setProposedChange] =
+        useState(null);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Load Project Files
     |--------------------------------------------------------------------------
     */
 
@@ -204,7 +186,9 @@ const [proposedChange, setProposedChange] =
 
 
                 /*
-                Call our frontend API service.
+                --------------------------------------------------------------
+                | Get project files from backend
+                --------------------------------------------------------------
                 */
 
                 const loadedFiles =
@@ -213,17 +197,15 @@ const [proposedChange, setProposedChange] =
                     );
 
 
-                /*
-                Store files in React state.
-                */
-
                 setFiles(
                     loadedFiles
                 );
 
 
                 /*
-                Automatically open the first file.
+                --------------------------------------------------------------
+                | Automatically select first file
+                --------------------------------------------------------------
                 */
 
                 if (
@@ -240,9 +222,13 @@ const [proposedChange, setProposedChange] =
 
                 } else {
 
-                    setSelectedFile(null);
+                    setSelectedFile(
+                        null
+                    );
 
-                    setFileContent("");
+                    setFileContent(
+                        ""
+                    );
 
                 }
 
@@ -252,7 +238,6 @@ const [proposedChange, setProposedChange] =
                     "Failed to load project files:",
                     err
                 );
-
 
                 setError(
                     err.message ||
@@ -268,10 +253,6 @@ const [proposedChange, setProposedChange] =
         };
 
 
-        /*
-        Only load files if a project exists.
-        */
-
         if (project?._id) {
 
             loadFiles();
@@ -285,47 +266,43 @@ const [proposedChange, setProposedChange] =
     |--------------------------------------------------------------------------
     | Select File
     |--------------------------------------------------------------------------
-    |
-    | When the user clicks a file:
-    |
-    | 1. Store the selected file.
-    | 2. Put its content into the editor.
-    |
-    |--------------------------------------------------------------------------
     */
 
     const handleSelectFile = (
         file
     ) => {
 
-        setSelectedFile(file);
+        setSelectedFile(
+            file
+        );
+
 
         setFileContent(
             file.content || ""
         );
 
-        /*
-        Clear previous save messages.
-        */
 
         setSaveStatus("");
 
         setSaveError("");
+
+
+        /*
+        ----------------------------------------------------------------------
+        | Remove any previous AI proposal
+        ----------------------------------------------------------------------
+        */
+
+        setProposedChange(
+            null
+        );
 
     };
 
 
     /*
     |--------------------------------------------------------------------------
-    | Handle Editor Changes
-    |--------------------------------------------------------------------------
-    |
-    | Every time the user types something:
-    |
-    | textarea
-    |    ↓
-    | fileContent state
-    |
+    | Editor Change
     |--------------------------------------------------------------------------
     */
 
@@ -337,14 +314,11 @@ const [proposedChange, setProposedChange] =
             event.target.value
         );
 
-        /*
-        The current editor content is different
-        from what was last saved.
-        */
 
         setSaveStatus(
             "unsaved"
         );
+
 
         setSaveError("");
 
@@ -352,135 +326,53 @@ const [proposedChange, setProposedChange] =
 
 
     /*
-|--------------------------------------------------------------------------
-| AI Proposed Change
-|--------------------------------------------------------------------------
-*/
-
-const handleProposedChange = ({
-    originalCode,
-    proposedCode,
-}) => {
-
-    setProposedChange({
-
-        originalCode,
-
-        proposedCode,
-
-    });
-
-};
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Apply AI Change
-|--------------------------------------------------------------------------
-*/
-
-const handleApplyChange = () => {
-
-    if (!proposedChange) {
-        return;
-    }
-
-
-    setFileContent(
-        proposedChange.proposedCode
-    );
-
-
-    setSaveStatus("unsaved");
-
-    setSaveError("");
-
-
-    setProposedChange(null);
-
-};
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Reject AI Change
-|--------------------------------------------------------------------------
-*/
-
-const handleRejectChange = () => {
-
-    setProposedChange(null);
-
-};
-
-    /*
     |--------------------------------------------------------------------------
     | Save File
-    |--------------------------------------------------------------------------
-    |
-    | THIS IS THE IMPORTANT PART.
-    |
-    | Previously we only changed React state.
-    |
-    | Now:
-    |
-    | React
-    |   ↓
-    | updateProjectFile()
-    |   ↓
-    | PUT /api/projects/:id/files/:fileId
-    |   ↓
-    | Express
-    |   ↓
-    | MongoDB
-    |
     |--------------------------------------------------------------------------
     */
 
     const handleSaveFile = async () => {
 
-        /*
-        We cannot save if no file is selected.
-        */
-
-        if (!selectedFile) {
-
+        if (
+            !selectedFile ||
+            saveStatus === "saving"
+        ) {
             return;
-
         }
 
 
         try {
 
-            /*
-            Show saving state.
-            */
-
             setSaveStatus(
                 "saving"
             );
+
 
             setSaveError("");
 
 
             /*
-            Send the edited content to the backend.
+            ------------------------------------------------------------------
+            | Send updated content to backend
+            ------------------------------------------------------------------
             */
 
             const updatedFile =
                 await updateProjectFile(
+
                     project._id,
+
                     selectedFile._id,
+
                     fileContent
+
                 );
 
 
             /*
-            Update the selected file with the
-            version returned by MongoDB.
+            ------------------------------------------------------------------
+            | Update selected file
+            ------------------------------------------------------------------
             */
 
             setSelectedFile(
@@ -489,7 +381,9 @@ const handleRejectChange = () => {
 
 
             /*
-            Update the file inside our files array.
+            ------------------------------------------------------------------
+            | Update file explorer
+            ------------------------------------------------------------------
             */
 
             setFiles(
@@ -509,8 +403,9 @@ const handleRejectChange = () => {
 
 
             /*
-            Make sure the editor contains
-            exactly what the backend returned.
+            ------------------------------------------------------------------
+            | Update editor content
+            ------------------------------------------------------------------
             */
 
             setFileContent(
@@ -519,15 +414,14 @@ const handleRejectChange = () => {
 
 
             /*
-            IMPORTANT:
-            Only show "Saved" AFTER the backend
-            successfully responds.
+            ------------------------------------------------------------------
+            | Saved successfully
+            ------------------------------------------------------------------
             */
 
             setSaveStatus(
                 "saved"
             );
-
 
         } catch (err) {
 
@@ -537,14 +431,10 @@ const handleRejectChange = () => {
             );
 
 
-            /*
-            Do NOT say "Saved" if MongoDB
-            rejected the request.
-            */
-
             setSaveStatus(
                 "error"
             );
+
 
             setSaveError(
                 err.message ||
@@ -558,19 +448,179 @@ const handleRejectChange = () => {
 
     /*
     |--------------------------------------------------------------------------
-    | Back Button
+    | Keyboard Save
+    |--------------------------------------------------------------------------
+    */
+
+    useEffect(() => {
+
+        const handleKeyboardSave = (
+            event
+        ) => {
+
+            if (
+                (
+                    event.ctrlKey ||
+                    event.metaKey
+                ) &&
+                event.key.toLowerCase() === "s"
+            ) {
+
+                event.preventDefault();
+
+                handleSaveFile();
+
+            }
+
+        };
+
+
+        window.addEventListener(
+            "keydown",
+            handleKeyboardSave
+        );
+
+
+        return () => {
+
+            window.removeEventListener(
+                "keydown",
+                handleKeyboardSave
+            );
+
+        };
+
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Receive AI Proposed Change
+    |--------------------------------------------------------------------------
+    */
+
+    const handleProposedChange = ({
+        originalCode,
+        proposedCode,
+    }) => {
+
+        /*
+        ----------------------------------------------------------------------
+        | Store the proposal
+        ----------------------------------------------------------------------
+        */
+
+        setProposedChange({
+
+            originalCode,
+
+            proposedCode,
+
+        });
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apply AI Change
+    |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    |
+    | Applying the AI change only updates the editor.
+    |
+    | It does NOT immediately save to MongoDB.
+    |
+    | The developer must still press Save.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    const handleApplyChange = () => {
+
+        if (!proposedChange) {
+            return;
+        }
+
+
+        /*
+        ----------------------------------------------------------------------
+        | Replace editor content
+        ----------------------------------------------------------------------
+        */
+
+        setFileContent(
+            proposedChange.proposedCode
+        );
+
+
+        /*
+        ----------------------------------------------------------------------
+        | Mark file as unsaved
+        ----------------------------------------------------------------------
+        */
+
+        setSaveStatus(
+            "unsaved"
+        );
+
+
+        /*
+        ----------------------------------------------------------------------
+        | Clear previous save error
+        ----------------------------------------------------------------------
+        */
+
+        setSaveError("");
+
+
+        /*
+        ----------------------------------------------------------------------
+        | Close preview
+        ----------------------------------------------------------------------
+        */
+
+        setProposedChange(
+            null
+        );
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reject AI Change
+    |--------------------------------------------------------------------------
+    */
+
+    const handleRejectChange = () => {
+
+        /*
+        ----------------------------------------------------------------------
+        | Do not modify editor content.
+        |
+        | Simply close the proposal.
+        ----------------------------------------------------------------------
+        */
+
+        setProposedChange(
+            null
+        );
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Back
     |--------------------------------------------------------------------------
     */
 
     const handleBack = () => {
 
-        /*
-        ProjectDetails normally provides onBack.
-        */
-
         if (
-            typeof onBack ===
-            "function"
+            typeof onBack === "function"
         ) {
 
             onBack();
@@ -580,10 +630,6 @@ const handleRejectChange = () => {
         }
 
 
-        /*
-        Fallback to browser history.
-        */
-
         window.history.back();
 
     };
@@ -591,7 +637,7 @@ const handleRejectChange = () => {
 
     /*
     |--------------------------------------------------------------------------
-    | Loading Screen
+    | Loading State
     |--------------------------------------------------------------------------
     */
 
@@ -599,29 +645,20 @@ const handleRejectChange = () => {
 
         return (
 
-            <div style={styles.page}>
+            <div className="workspace-page">
 
-                <div
-                    style={
-                        styles.centerCard
-                    }
-                >
+                <div className="workspace-state-card">
 
-                    <div
-                        style={
-                            styles.loadingIcon
-                        }
-                    >
-                        ⏳
+                    <div className="state-icon">
+                        ⌛
                     </div>
 
                     <h2>
-                        Loading workspace...
+                        Opening workspace
                     </h2>
 
                     <p>
-                        Loading project files
-                        from MongoDB.
+                        Loading your project files...
                     </p>
 
                 </div>
@@ -635,7 +672,7 @@ const handleRejectChange = () => {
 
     /*
     |--------------------------------------------------------------------------
-    | Error Screen
+    | Error State
     |--------------------------------------------------------------------------
     */
 
@@ -643,39 +680,27 @@ const handleRejectChange = () => {
 
         return (
 
-            <div style={styles.page}>
+            <div className="workspace-page">
 
-                <div
-                    style={
-                        styles.centerCard
-                    }
-                >
+                <div className="workspace-state-card">
 
-                    <div
-                        style={
-                            styles.errorIcon
-                        }
-                    >
-                        ⚠️
+                    <div className="state-icon error">
+                        !
                     </div>
 
                     <h2>
-                        Failed to load workspace
+                        Couldn’t load workspace
                     </h2>
 
-                    <p style={styles.errorText}>
+                    <p className="state-error">
                         {error}
                     </p>
 
                     <button
-                        onClick={
-                            handleBack
-                        }
-                        style={
-                            styles.backButton
-                        }
+                        className="primary-button"
+                        onClick={handleBack}
                     >
-                        ← Back
+                        ← Back to project
                     </button>
 
                 </div>
@@ -689,64 +714,56 @@ const handleRejectChange = () => {
 
     /*
     |--------------------------------------------------------------------------
-    | Main Workspace
+    | Workspace UI
     |--------------------------------------------------------------------------
     */
 
     return (
 
-        <div style={styles.page}>
+        <div className="workspace-page">
 
-            {/* ==========================================================
-                TOP HEADER
-            ========================================================== */}
 
-            <header
-                style={
-                    styles.header
-                }
-            >
+            {/* ==============================================================
+                TOP BAR
+            ============================================================== */}
 
-                <div
-                    style={
-                        styles.headerLeft
-                    }
-                >
+            <header className="workspace-topbar">
+
+                <div className="topbar-left">
 
                     <button
-                        onClick={
-                            handleBack
-                        }
-                        style={
-                            styles.backButton
-                        }
+                        className="back-button"
+                        onClick={handleBack}
                     >
-                        ← Back
+
+                        <span>
+                            ←
+                        </span>
+
+                        Back
+
                     </button>
 
 
-                    <div
-                        style={
-                            styles.projectInfo
-                        }
-                    >
+                    <div className="brand-divider" />
 
-                        <div
-                            style={
-                                styles.projectName
-                            }
-                        >
-                            🚀{" "}
-                            {project?.name ||
-                                "Project"}
+
+                    <div className="brand">
+
+                        <div className="brand-mark">
+                            DK
                         </div>
 
-                        <div
-                            style={
-                                styles.projectSubtitle
-                            }
-                        >
-                            Development Workspace
+                        <div>
+
+                            <div className="brand-name">
+                                DevPilot AI
+                            </div>
+
+                            <div className="brand-subtitle">
+                                Developer workspace
+                            </div>
+
                         </div>
 
                     </div>
@@ -754,72 +771,73 @@ const handleRejectChange = () => {
                 </div>
 
 
-                <div
-                    style={
-                        styles.brand
-                    }
-                >
-                    DevPilot AI
+                <div className="project-badge">
+
+                    <span className="status-dot" />
+
+                    <span>
+                        {project?.name ||
+                            "Untitled project"}
+                    </span>
+
                 </div>
 
             </header>
 
 
-            {/* ==========================================================
+            {/* ==============================================================
                 MAIN WORKSPACE
-            ========================================================== */}
+            ============================================================== */}
 
-            <main
-                style={
-                    styles.workspace
-                }
-            >
+            <main className="workspace-shell">
 
-                {/* ======================================================
-                    LEFT FILE EXPLORER
-                ====================================================== */}
 
-                <aside
-                    style={
-                        styles.sidebar
-                    }
-                >
+                {/* ==========================================================
+                    LEFT: FILE EXPLORER
+                ========================================================== */}
 
-                    <div
-                        style={
-                            styles.sidebarHeader
-                        }
-                    >
+                <aside className="file-explorer">
 
-                        <span>
-                            📁 Explorer
-                        </span>
+                    <div className="panel-heading">
 
-                        <span
-                            style={
-                                styles.fileCount
-                            }
-                        >
+                        <div>
+
+                            <span className="panel-title">
+                                Explorer
+                            </span>
+
+                            <span className="panel-subtitle">
+                                Project files
+                            </span>
+
+                        </div>
+
+
+                        <span className="file-count">
                             {files.length}
                         </span>
 
                     </div>
 
 
-                    <div
-                        style={
-                            styles.fileList
-                        }
-                    >
+                    <div className="file-tree">
 
                         {files.length === 0 ? (
 
-                            <div
-                                style={
-                                    styles.emptyFiles
-                                }
-                            >
-                                No files found.
+                            <div className="empty-files">
+
+                                <div className="empty-files-icon">
+                                    📁
+                                </div>
+
+                                <strong>
+                                    No files
+                                </strong>
+
+                                <span>
+                                    This project has no files yet.
+                                </span>
+
                             </div>
 
                         ) : (
@@ -828,49 +846,58 @@ const handleRejectChange = () => {
                                 (file) => (
 
                                     <button
-                                        key={
-                                            file._id
+                                        key={file._id}
+
+                                        className={
+                                            `file-row ${
+                                                selectedFile?._id ===
+                                                file._id
+                                                    ? "active"
+                                                    : ""
+                                            }`
                                         }
+
                                         onClick={() =>
                                             handleSelectFile(
                                                 file
                                             )
                                         }
-                                        style={{
-                                            ...styles.fileButton,
 
-                                            ...(selectedFile?._id ===
-                                            file._id
-                                                ? styles.selectedFile
-                                                : {}),
-                                        }}
+                                        title={
+                                            file.path
+                                        }
                                     >
 
-                                        <span>
-                                            {file.path.startsWith(
-                                                "src/"
-                                            )
-                                                ? "📄"
-                                                : file.path.endsWith(
-                                                      ".json"
-                                                  )
-                                                ? "🧩"
-                                                : file.path.endsWith(
-                                                      ".md"
-                                                  )
-                                                ? "📝"
-                                                : "📄"}
-                                        </span>
-
                                         <span
-                                            style={
-                                                styles.fileName
+                                            className={
+                                                `file-type type-${getFileIcon(
+                                                    file.path
+                                                )}`
                                             }
                                         >
-                                            {
+                                            {getFileIcon(
                                                 file.path
-                                            }
+                                            )}
                                         </span>
+
+
+                                        <span className="file-path">
+
+                                            {file.path}
+
+                                        </span>
+
+
+                                        {selectedFile?._id ===
+                                            file._id &&
+                                            saveStatus ===
+                                                "unsaved" && (
+
+                                            <span
+                                                className="unsaved-dot"
+                                            />
+
+                                        )}
 
                                     </button>
 
@@ -881,67 +908,89 @@ const handleRejectChange = () => {
 
                     </div>
 
+
+                    <div className="explorer-footer">
+
+                        <span>
+                            WORKSPACE
+                        </span>
+
+                        <span className="footer-online">
+
+                            <span className="tiny-dot" />
+
+                            Connected
+
+                        </span>
+
+                    </div>
+
                 </aside>
 
 
-                {/* ======================================================
-                    CENTER CODE EDITOR
-                ====================================================== */}
+                {/* ==========================================================
+                    CENTER: CODE EDITOR
+                ========================================================== */}
 
-                <section
-                    style={
-                        styles.editorSection
-                    }
-                >
+                <section className="editor-panel">
 
-                    {/* --------------------------------------------------
-                        Editor Header
-                    -------------------------------------------------- */}
 
-                    <div
-                        style={
-                            styles.editorHeader
-                        }
-                    >
+                    {/* ------------------------------------------------------
+                        Editor Tabs
+                    ------------------------------------------------------ */}
 
-                        <div
-                            style={
-                                styles.editorFile
-                            }
-                        >
+                    <div className="editor-tabs">
 
-                            <span>
+                        <div className="editor-tab active">
+
+                            <span className="tab-file-icon">
+
                                 {selectedFile
-                                    ? "📄"
-                                    : "📄"}
+                                    ? getFileIcon(
+                                        selectedFile.path
+                                    )
+                                    : "•"}
+
                             </span>
 
+
                             <span>
+
                                 {selectedFile
+
                                     ? selectedFile.path
-                                    : "No file selected"}
+                                        .split("/")
+                                        .pop()
+
+                                    : "No file"}
+
                             </span>
+
+
+                            {saveStatus ===
+                                "unsaved" && (
+
+                                <span className="tab-unsaved">
+                                    ●
+                                </span>
+
+                            )}
 
                         </div>
 
 
-                        <div
-                            style={
-                                styles.editorActions
-                            }
-                        >
+                        <div className="editor-actions">
 
-                            {/* Save Status */}
 
                             {saveStatus ===
                                 "unsaved" && (
 
                                 <span
-                                    style={
-                                        styles.unsavedStatus
+                                    className={
+                                        "save-status unsaved"
                                     }
                                 >
-                                    ● Unsaved
+                                    ● Unsaved changes
                                 </span>
 
                             )}
@@ -951,8 +1000,8 @@ const handleRejectChange = () => {
                                 "saving" && (
 
                                 <span
-                                    style={
-                                        styles.savingStatus
+                                    className={
+                                        "save-status saving"
                                     }
                                 >
                                     Saving...
@@ -965,11 +1014,11 @@ const handleRejectChange = () => {
                                 "saved" && (
 
                                 <span
-                                    style={
-                                        styles.savedStatus
+                                    className={
+                                        "save-status saved"
                                     }
                                 >
-                                    ✓ Saved
+                                    ✓ Saved to database
                                 </span>
 
                             )}
@@ -979,8 +1028,8 @@ const handleRejectChange = () => {
                                 "error" && (
 
                                 <span
-                                    style={
-                                        styles.saveErrorStatus
+                                    className={
+                                        "save-status failed"
                                     }
                                 >
                                     ✕ Save failed
@@ -990,27 +1039,29 @@ const handleRejectChange = () => {
 
 
                             <button
+                                className="save-button"
+
                                 onClick={
                                     handleSaveFile
                                 }
+
                                 disabled={
                                     !selectedFile ||
                                     saveStatus ===
                                         "saving"
                                 }
-                                style={{
-                                    ...styles.saveButton,
-
-                                    ...(
-                                        !selectedFile ||
-                                        saveStatus ===
-                                            "saving"
-                                            ? styles.disabledButton
-                                            : {}
-                                    ),
-                                }}
                             >
-                                💾 Save
+
+                                <span>
+                                    ↥
+                                </span>
+
+                                Save
+
+                                <kbd>
+                                    Ctrl S
+                                </kbd>
+
                             </button>
 
                         </div>
@@ -1018,80 +1069,158 @@ const handleRejectChange = () => {
                     </div>
 
 
-                    {/* --------------------------------------------------
+                    {/* ------------------------------------------------------
                         Save Error
-                    -------------------------------------------------- */}
+                    ------------------------------------------------------ */}
 
                     {saveError && (
 
-                        <div
-                            style={
-                                styles.saveError
-                            }
-                        >
-                            ⚠️ {saveError}
+                        <div className="save-error-banner">
+
+                            <span>
+                                ⚠
+                            </span>
+
+                            {saveError}
+
                         </div>
 
                     )}
 
 
-                    {/* --------------------------------------------------
+                    {/* ------------------------------------------------------
                         Editor
-                    -------------------------------------------------- */}
+                    ------------------------------------------------------ */}
 
                     {selectedFile ? (
 
-                        <div
-                            style={
-                                styles.editorContainer
-                            }
-                        >
+                        <div className="editor-area">
 
-                            <div
-                                style={
-                                    styles.editorLineBar
-                                }
-                            >
+
+                            <div className="editor-path">
+
                                 <span>
-                                    {selectedFile.path}
+                                    src
                                 </span>
+
+                                <span>
+                                    /
+                                </span>
+
+                                <strong>
+                                    {selectedFile.path}
+                                </strong>
+
                             </div>
 
 
-                            <textarea
-                                value={
-                                    fileContent
-                                }
-                                onChange={
-                                    handleEditorChange
-                                }
-                                spellCheck={
-                                    false
-                                }
-                                autoCapitalize="off"
-                                autoCorrect="off"
-                                autoComplete="off"
-                                style={
-                                    styles.codeEditor
-                                }
-                            />
+                            <div className="editor-body">
+
+
+                                <div
+                                    className="line-numbers"
+                                    aria-hidden="true"
+                                >
+
+                                    {fileContent
+                                        .split("\n")
+                                        .map(
+                                            (
+                                                _,
+                                                index
+                                            ) => (
+
+                                                <span
+                                                    key={
+                                                        index
+                                                    }
+                                                >
+                                                    {index + 1}
+                                                </span>
+
+                                            )
+                                        )}
+
+                                </div>
+
+
+                                <textarea
+                                    value={
+                                        fileContent
+                                    }
+
+                                    onChange={
+                                        handleEditorChange
+                                    }
+
+                                    spellCheck={
+                                        false
+                                    }
+
+                                    autoCapitalize="off"
+
+                                    autoCorrect="off"
+
+                                    autoComplete="off"
+
+                                    className="code-editor"
+
+                                    aria-label={
+                                        `Editor for ${selectedFile.path}`
+                                    }
+                                />
+
+                            </div>
+
+
+                            <div className="editor-statusbar">
+
+
+                                <div className="statusbar-left">
+
+                                    <span>
+                                        UTF-8
+                                    </span>
+
+                                    <span>
+                                        LF
+                                    </span>
+
+                                    <span>
+                                        {getFileIcon(
+                                            selectedFile.path
+                                        )}
+                                    </span>
+
+                                </div>
+
+
+                                <div className="statusbar-right">
+
+                                    <span>
+                                        {fileContent.length}
+                                        {" "}
+                                        chars
+                                    </span>
+
+                                    <span>
+                                        {fileContent.split("\n").length}
+                                        {" "}
+                                        lines
+                                    </span>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
                     ) : (
 
-                        <div
-                            style={
-                                styles.emptyEditor
-                            }
-                        >
+                        <div className="empty-editor">
 
-                            <div
-                                style={
-                                    styles.emptyEditorIcon
-                                }
-                            >
-                                📄
+                            <div className="empty-editor-icon">
+                                ⌘
                             </div>
 
                             <h2>
@@ -1099,9 +1228,8 @@ const handleRejectChange = () => {
                             </h2>
 
                             <p>
-                                Choose a file from
-                                the Explorer to start
-                                editing.
+                                Choose a file from Explorer
+                                to start editing.
                             </p>
 
                         </div>
@@ -1111,28 +1239,71 @@ const handleRejectChange = () => {
                 </section>
 
 
-                
-                
-                {/* ======================================================
-                    RIGHT AI PANEL
-                ====================================================== */}
+                {/* ==========================================================
+                    RIGHT: AI PANEL
+                ========================================================== */}
 
-{/* ======================================================
-    RIGHT AI PANEL
-====================================================== */}
+                <aside className="ai-panel">
 
-<aside style={styles.aiPanel}>
 
-    <AIChat
-        projectId={project?._id}
-        fileId={selectedFile?._id}
-        fileContent={fileContent}
-        onProposedChange={
-            handleProposedChange
-        }
-    />
+                    {/* ======================================================
+                        AI PROPOSED CHANGE
+                    ====================================================== */}
 
-</aside>
+                    {proposedChange && (
+
+                        <CodeChangePreview
+
+                            filePath={
+                                selectedFile?.path
+                            }
+
+                            originalCode={
+                                proposedChange.originalCode
+                            }
+
+                            proposedCode={
+                                proposedChange.proposedCode
+                            }
+
+                            onApply={
+                                handleApplyChange
+                            }
+
+                            onReject={
+                                handleRejectChange
+                            }
+
+                        />
+
+                    )}
+
+
+                    {/* ======================================================
+                        AI CHAT
+                    ====================================================== */}
+
+                    <AIChat
+
+                        projectId={
+                            project?._id
+                        }
+
+                        fileId={
+                            selectedFile?._id
+                        }
+
+                        fileContent={
+                            fileContent
+                        }
+
+                        onProposedChange={
+                            handleProposedChange
+                        }
+
+                    />
+
+                </aside>
 
             </main>
 
@@ -1142,489 +1313,5 @@ const handleRejectChange = () => {
 
 };
 
-
-/*
-|--------------------------------------------------------------------------
-| Styles
-|--------------------------------------------------------------------------
-*/
-
-const styles = {
-
-    page: {
-        minHeight: "100vh",
-        backgroundColor: "#0f172a",
-        color: "#e5e7eb",
-        fontFamily:
-            "Inter, Arial, Helvetica, sans-serif",
-        padding: "16px",
-        boxSizing: "border-box",
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Header
-    |--------------------------------------------------------------------------
-    */
-
-    header: {
-        height: "64px",
-        maxWidth: "1500px",
-        margin: "0 auto 12px",
-        padding: "0 18px",
-        backgroundColor: "#111827",
-        border:
-            "1px solid #1f2937",
-        borderRadius: "10px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        boxSizing: "border-box",
-    },
-
-
-    headerLeft: {
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-    },
-
-
-    backButton: {
-        padding:
-            "8px 14px",
-        border:
-            "1px solid #374151",
-        borderRadius: "7px",
-        backgroundColor: "#1f2937",
-        color: "#e5e7eb",
-        cursor: "pointer",
-        fontSize: "14px",
-    },
-
-
-    projectInfo: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "2px",
-    },
-
-
-    projectName: {
-        fontSize: "17px",
-        fontWeight: "700",
-    },
-
-
-    projectSubtitle: {
-        fontSize: "12px",
-        color: "#9ca3af",
-    },
-
-
-    brand: {
-        fontSize: "17px",
-        fontWeight: "700",
-        color: "#38bdf8",
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Workspace
-    |--------------------------------------------------------------------------
-    */
-
-    workspace: {
-        maxWidth: "1500px",
-        minHeight: "calc(100vh - 108px)",
-        margin: "0 auto",
-        display: "grid",
-        gridTemplateColumns:
-            "240px minmax(0, 1fr) 330px",
-        backgroundColor: "#111827",
-        border:
-            "1px solid #1f2937",
-        borderRadius: "10px",
-        overflow: "hidden",
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sidebar
-    |--------------------------------------------------------------------------
-    */
-
-    sidebar: {
-        backgroundColor: "#0b1220",
-        borderRight:
-            "1px solid #1f2937",
-        minHeight: "650px",
-        display: "flex",
-        flexDirection: "column",
-    },
-
-
-    sidebarHeader: {
-        height: "52px",
-        padding: "0 15px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom:
-            "1px solid #1f2937",
-        fontSize: "14px",
-    },
-
-
-    fileCount: {
-        minWidth: "22px",
-        padding: "2px 6px",
-        borderRadius: "10px",
-        backgroundColor: "#1f2937",
-        color: "#9ca3af",
-        fontSize: "11px",
-        textAlign: "center",
-    },
-
-
-    fileList: {
-        padding: "8px",
-        overflowY: "auto",
-    },
-
-
-    fileButton: {
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        gap: "9px",
-        padding: "9px 10px",
-        marginBottom: "2px",
-        border: "none",
-        borderRadius: "6px",
-        backgroundColor: "transparent",
-        color: "#cbd5e1",
-        cursor: "pointer",
-        textAlign: "left",
-        fontSize: "13px",
-    },
-
-
-    selectedFile: {
-        backgroundColor: "#1e3a5f",
-        color: "#ffffff",
-    },
-
-
-    fileName: {
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-    },
-
-
-    emptyFiles: {
-        padding: "20px 12px",
-        color: "#6b7280",
-        fontSize: "13px",
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Editor
-    |--------------------------------------------------------------------------
-    */
-
-    editorSection: {
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#0d1117",
-    },
-
-
-    editorHeader: {
-        minHeight: "52px",
-        padding: "0 14px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-        backgroundColor: "#111827",
-        borderBottom:
-            "1px solid #1f2937",
-        boxSizing: "border-box",
-    },
-
-
-    editorFile: {
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        fontSize: "13px",
-        color: "#d1d5db",
-        overflow: "hidden",
-    },
-
-
-    editorActions: {
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-    },
-
-
-    saveButton: {
-        padding:
-            "8px 15px",
-        border: "none",
-        borderRadius: "6px",
-        backgroundColor: "#2563eb",
-        color: "#ffffff",
-        cursor: "pointer",
-        fontWeight: "600",
-        fontSize: "13px",
-    },
-
-
-    disabledButton: {
-        opacity: 0.5,
-        cursor: "not-allowed",
-    },
-
-
-    unsavedStatus: {
-        color: "#f59e0b",
-        fontSize: "12px",
-    },
-
-
-    savingStatus: {
-        color: "#60a5fa",
-        fontSize: "12px",
-    },
-
-
-    savedStatus: {
-        color: "#4ade80",
-        fontSize: "12px",
-    },
-
-
-    saveErrorStatus: {
-        color: "#f87171",
-        fontSize: "12px",
-    },
-
-
-    saveError: {
-        padding: "8px 14px",
-        backgroundColor: "#3f1d1d",
-        color: "#fca5a5",
-        borderBottom:
-            "1px solid #7f1d1d",
-        fontSize: "12px",
-    },
-
-
-    editorContainer: {
-        flex: 1,
-        minHeight: "590px",
-        display: "flex",
-        flexDirection: "column",
-    },
-
-
-    editorLineBar: {
-        height: "30px",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 16px",
-        backgroundColor: "#161b22",
-        color: "#6b7280",
-        borderBottom:
-            "1px solid #21262d",
-        fontSize: "11px",
-    },
-
-
-    codeEditor: {
-        flex: 1,
-        width: "100%",
-        minHeight: "560px",
-        resize: "none",
-        outline: "none",
-        border: "none",
-        padding: "18px",
-        boxSizing: "border-box",
-        backgroundColor: "#0d1117",
-        color: "#e6edf3",
-        fontFamily:
-            "Consolas, Monaco, 'Courier New', monospace",
-        fontSize: "14px",
-        lineHeight: "1.65",
-        whiteSpace: "pre",
-        tabSize: 4,
-    },
-
-
-    emptyEditor: {
-        flex: 1,
-        minHeight: "590px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        color: "#6b7280",
-        textAlign: "center",
-    },
-
-
-    emptyEditorIcon: {
-        fontSize: "42px",
-        marginBottom: "10px",
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | AI Panel
-    |--------------------------------------------------------------------------
-    */
-
-    aiPanel: {
-        minHeight: "650px",
-        backgroundColor: "#111827",
-        borderLeft:
-            "1px solid #1f2937",
-        display: "flex",
-        flexDirection: "column",
-    },
-
-
-    aiHeader: {
-        minHeight: "52px",
-        padding: "0 15px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom:
-            "1px solid #1f2937",
-        fontSize: "14px",
-        fontWeight: "600",
-    },
-
-
-    aiStatus: {
-        fontSize: "11px",
-        color: "#4ade80",
-        backgroundColor: "#052e16",
-        padding: "4px 7px",
-        borderRadius: "10px",
-    },
-
-
-    aiContent: {
-        padding: "18px",
-        overflowY: "auto",
-    },
-
-
-    aiWelcome: {
-        padding: "20px",
-        backgroundColor: "#0f172a",
-        border:
-            "1px solid #1f2937",
-        borderRadius: "10px",
-        textAlign: "center",
-    },
-
-
-    aiLargeIcon: {
-        fontSize: "38px",
-        marginBottom: "8px",
-    },
-
-
-
-
-
-    aiSuggestions: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "7px",
-        marginTop: "15px",
-    },
-
-
-    suggestion: {
-        padding: "11px 12px",
-        backgroundColor: "#0f172a",
-        border:
-            "1px solid #1f2937",
-        borderRadius: "7px",
-        color: "#cbd5e1",
-        fontSize: "12px",
-    },
-
-
-    aiComingSoon: {
-        marginTop: "15px",
-        padding: "15px",
-        border:
-            "1px dashed #374151",
-        borderRadius: "8px",
-        color: "#6b7280",
-        textAlign: "center",
-        fontSize: "12px",
-    },
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Loading / Error
-    |--------------------------------------------------------------------------
-    */
-
-    centerCard: {
-        maxWidth: "500px",
-        margin: "100px auto",
-        padding: "40px",
-        backgroundColor: "#111827",
-        border:
-            "1px solid #1f2937",
-        borderRadius: "12px",
-        textAlign: "center",
-        boxSizing: "border-box",
-    },
-
-
-    loadingIcon: {
-        fontSize: "35px",
-    },
-
-
-    errorIcon: {
-        fontSize: "35px",
-    },
-
-
-    errorText: {
-        color: "#f87171",
-        lineHeight: "1.6",
-    },
-
-};
-
-
-/*
-|--------------------------------------------------------------------------
-| Export
-|--------------------------------------------------------------------------
-*/
 
 export default ProjectWorkspace;

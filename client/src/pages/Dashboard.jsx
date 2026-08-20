@@ -394,7 +394,7 @@ const Dashboard = () => {
                 <div className="loading-screen">
 
                     <div className="loading-logo">
-                        🚀
+                        🍺
                     </div>
 
                     <h2>
@@ -432,7 +432,7 @@ const Dashboard = () => {
                 <div className="nav-brand">
 
                     <div className="brand-icon">
-                        🚀
+                        DK
                     </div>
 
                     <div>
@@ -534,7 +534,7 @@ const Dashboard = () => {
                                 "Developer"
                             }
 
-                            <span> 👋</span>
+                            <span> Gang</span>
 
                         </h1>
 
@@ -1106,7 +1106,7 @@ const Dashboard = () => {
                 <footer className="dashboard-footer">
 
                     <div>
-                        🚀 DevPilot AI
+                        DevPilot AI
                     </div>
 
                     <span>

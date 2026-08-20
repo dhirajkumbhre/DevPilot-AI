@@ -255,7 +255,7 @@ const ProjectDetails = ({ projectId, onBack }) => {
             <div style={styles.projectCard}>
 
                 <h1>
-                    🚀 {project.name}
+                    🧑🏽‍💻 {project.name}
                 </h1>
 
                 <p style={styles.description}>
@@ -317,7 +317,7 @@ const ProjectDetails = ({ projectId, onBack }) => {
                         styles.openButton
                     }
                 >
-                    🚀 Open Project
+                     Open Project
                 </button>
             </div>
         </div>
