@@ -534,7 +534,7 @@ const Dashboard = () => {
                                 "Developer"
                             }
 
-                            <span> Gang</span>
+                            <span> Developer</span>
 
                         </h1>
 

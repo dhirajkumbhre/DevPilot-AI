@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 
 import ProjectWorkspace from "./ProjectWorkspace";
 
+import "../styles/project-details.css";
+
+
 /*
 |--------------------------------------------------------------------------
 | ProjectDetails
@@ -15,11 +18,6 @@ import ProjectWorkspace from "./ProjectWorkspace";
 */
 
 const ProjectDetails = ({ projectId, onBack }) => {
-    /*
-    |--------------------------------------------------------------------------
-    | State
-    |--------------------------------------------------------------------------
-    */
 
     const [project, setProject] = useState(null);
 
@@ -30,6 +28,7 @@ const ProjectDetails = ({ projectId, onBack }) => {
     const [workspaceOpen, setWorkspaceOpen] =
         useState(false);
 
+
     /*
     |--------------------------------------------------------------------------
     | Load Project
@@ -37,14 +36,18 @@ const ProjectDetails = ({ projectId, onBack }) => {
     */
 
     useEffect(() => {
+
         const loadProject = async () => {
+
             try {
+
                 setLoading(true);
 
                 setError("");
 
                 const token =
                     localStorage.getItem("token");
+
 
                 const response = await fetch(
                     `http://localhost:5000/api/projects/${projectId}`,
@@ -55,23 +58,31 @@ const ProjectDetails = ({ projectId, onBack }) => {
                             "Content-Type":
                                 "application/json",
 
-                            Authorization: `Bearer ${token}`,
+                            Authorization:
+                                `Bearer ${token}`,
                         },
                     }
                 );
 
+
                 const data =
                     await response.json();
 
+
                 if (!response.ok) {
+
                     throw new Error(
                         data.message ||
-                            "Failed to load project"
+                        "Failed to load project"
                     );
+
                 }
 
+
                 setProject(data.project);
+
             } catch (err) {
+
                 console.error(
                     "Failed to load project:",
                     err
@@ -79,37 +90,59 @@ const ProjectDetails = ({ projectId, onBack }) => {
 
                 setError(
                     err.message ||
-                        "Failed to load project"
+                    "Failed to load project"
                 );
+
             } finally {
+
                 setLoading(false);
+
             }
+
         };
+
 
         if (projectId) {
             loadProject();
         }
+
     }, [projectId]);
 
+
     /*
     |--------------------------------------------------------------------------
-    | Open Workspace
+    | Navigation
     |--------------------------------------------------------------------------
     */
+
+    const handleBack = () => {
+
+        if (typeof onBack === "function") {
+
+            onBack();
+
+        } else {
+
+            window.history.back();
+
+        }
+
+    };
+
 
     const handleOpenWorkspace = () => {
+
         setWorkspaceOpen(true);
+
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Close Workspace
-    |--------------------------------------------------------------------------
-    */
 
     const handleCloseWorkspace = () => {
+
         setWorkspaceOpen(false);
+
     };
+
 
     /*
     |--------------------------------------------------------------------------
@@ -118,16 +151,23 @@ const ProjectDetails = ({ projectId, onBack }) => {
     */
 
     if (loading) {
+
         return (
-            <div style={styles.page}>
-                <div style={styles.card}>
+            <div className="project-details-page">
+
+                <div className="project-details-state">
+
                     <h2>
                         Loading project...
                     </h2>
+
                 </div>
+
             </div>
         );
+
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -136,34 +176,34 @@ const ProjectDetails = ({ projectId, onBack }) => {
     */
 
     if (error) {
+
         return (
-            <div style={styles.page}>
-                <div style={styles.card}>
+            <div className="project-details-page">
+
+                <div className="project-details-state">
+
                     <h2>
-                        ⚠️ Project Error
+                        Project Error
                     </h2>
 
-                    <p>{error}</p>
+                    <p>
+                        {error}
+                    </p>
 
                     <button
-                        onClick={() => {
-                            if (
-                                typeof onBack ===
-                                "function"
-                            ) {
-                                onBack();
-                            } else {
-                                window.history.back();
-                            }
-                        }}
-                        style={styles.backButton}
+                        onClick={handleBack}
+                        className="project-details-back"
                     >
                         ← Back
                     </button>
+
                 </div>
+
             </div>
         );
+
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -172,53 +212,48 @@ const ProjectDetails = ({ projectId, onBack }) => {
     */
 
     if (!project) {
+
         return (
-            <div style={styles.page}>
-                <div style={styles.card}>
+            <div className="project-details-page">
+
+                <div className="project-details-state">
+
                     <h2>
                         Project not found
                     </h2>
 
                     <button
-                        onClick={() => {
-                            if (
-                                typeof onBack ===
-                                "function"
-                            ) {
-                                onBack();
-                            } else {
-                                window.history.back();
-                            }
-                        }}
-                        style={styles.backButton}
+                        onClick={handleBack}
+                        className="project-details-back"
                     >
                         ← Back
                     </button>
+
                 </div>
+
             </div>
         );
+
     }
+
 
     /*
     |--------------------------------------------------------------------------
     | Workspace
     |--------------------------------------------------------------------------
-    |
-    | When workspaceOpen is true we show the editor.
-    |
-    |--------------------------------------------------------------------------
     */
 
     if (workspaceOpen) {
+
         return (
             <ProjectWorkspace
                 project={project}
-                onBack={
-                    handleCloseWorkspace
-                }
+                onBack={handleCloseWorkspace}
             />
         );
+
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -227,198 +262,184 @@ const ProjectDetails = ({ projectId, onBack }) => {
     */
 
     return (
-        <div style={styles.page}>
 
-            <div style={styles.topBar}>
+        <div className="project-details-page">
+
+            {/* Top navigation */}
+
+            <div className="project-details-topbar">
 
                 <button
-                    onClick={() => {
-                        if (
-                            typeof onBack ===
-                            "function"
-                        ) {
-                            onBack();
-                        } else {
-                            window.history.back();
-                        }
-                    }}
-                    style={styles.backButton}
+                    onClick={handleBack}
+                    className="project-details-back"
                 >
                     ← Back
                 </button>
 
-                <div style={styles.brand}>
+
+                <div className="project-details-brand">
                     DevPilot AI
                 </div>
+
             </div>
 
-            <div style={styles.projectCard}>
 
-                <h1>
-                    🧑🏽‍💻 {project.name}
-                </h1>
+            {/* Main project card */}
 
-                <p style={styles.description}>
-                    {project.description ||
-                        "No description provided."}
-                </p>
+            <main className="project-details-card">
 
-                <div
-                    style={
-                        styles.infoSection
-                    }
-                >
-                    <h2>
-                        📋 Project Information
-                    </h2>
+                {/* Project header */}
 
-                    <p>
-                        <strong>
-                            Project ID:
-                        </strong>{" "}
-                        {project._id}
-                    </p>
+                <div className="project-details-header">
 
-                    <p>
-                        <strong>
-                            Owner:
-                        </strong>{" "}
-                        {project.owner}
-                    </p>
+                    <div className="project-details-title-area">
 
-                    <p>
-                        <strong>
-                            Created:
-                        </strong>{" "}
-                        {project.createdAt
-                            ? new Date(
-                                  project.createdAt
-                              ).toLocaleString()
-                            : "N/A"}
-                    </p>
+                        <h1 className="project-details-title">
+                            {project.name}
+                        </h1>
 
-                    <p>
-                        <strong>
-                            Last Updated:
-                        </strong>{" "}
-                        {project.updatedAt
-                            ? new Date(
-                                  project.updatedAt
-                              ).toLocaleString()
-                            : "N/A"}
-                    </p>
+                        <p className="project-details-description">
+                            {project.description ||
+                                "No description provided."}
+                        </p>
+
+                    </div>
+
+
+                    <div className="project-details-status">
+
+                        <span className="project-details-status-dot" />
+
+                        Active
+
+                    </div>
+
                 </div>
 
-                <button
-                    onClick={
-                        handleOpenWorkspace
-                    }
-                    style={
-                        styles.openButton
-                    }
-                >
-                     Open Project
-                </button>
-            </div>
+
+                {/* Project metadata */}
+
+                <div className="project-details-info-grid">
+
+                    <div className="project-details-info-item">
+
+                        <div className="project-details-info-label">
+                            Project ID
+                        </div>
+
+                        <div className="project-details-info-value">
+                            {project._id}
+                        </div>
+
+                    </div>
+
+
+                    <div className="project-details-info-item">
+
+                        <div className="project-details-info-label">
+                            Owner
+                        </div>
+
+                        <div className="project-details-info-value">
+                            {project.owner}
+                        </div>
+
+                    </div>
+
+
+                    <div className="project-details-info-item">
+
+                        <div className="project-details-info-label">
+                            Created
+                        </div>
+
+                        <div className="project-details-info-value">
+
+                            {project.createdAt
+                                ? new Date(
+                                    project.createdAt
+                                ).toLocaleString()
+                                : "N/A"}
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="project-details-info-item">
+
+                        <div className="project-details-info-label">
+                            Last Updated
+                        </div>
+
+                        <div className="project-details-info-value">
+
+                            {project.updatedAt
+                                ? new Date(
+                                    project.updatedAt
+                                ).toLocaleString()
+                                : "N/A"}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {/* Project description */}
+
+                <section className="project-details-section">
+
+                    <h2 className="project-details-section-title">
+                        About this workspace
+                    </h2>
+
+                    <p className="project-details-section-text">
+
+                        This workspace contains the files,
+                        configuration and development tools
+                        associated with this project.
+
+                    </p>
+
+                </section>
+
+
+                {/* Workspace action */}
+
+                <section className="project-details-workspace">
+
+                    <div>
+
+                        <h2 className="project-details-workspace-title">
+                            Development workspace
+                        </h2>
+
+                        <p className="project-details-workspace-text">
+                            Open the project editor to manage
+                            files and work with DevPilot.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        onClick={handleOpenWorkspace}
+                        className="project-details-open"
+                    >
+                        Open Workspace →
+                    </button>
+
+                </section>
+
+            </main>
+
         </div>
+
     );
+
 };
 
-/*
-|--------------------------------------------------------------------------
-| Styles
-|--------------------------------------------------------------------------
-*/
-
-const styles = {
-    page: {
-        minHeight: "100vh",
-        backgroundColor: "#f5f7fa",
-        padding: "20px",
-        boxSizing: "border-box",
-        fontFamily:
-            "Arial, Helvetica, sans-serif",
-    },
-
-    topBar: {
-        maxWidth: "1000px",
-        margin: "0 auto 20px",
-        padding: "15px 20px",
-        backgroundColor: "#ffffff",
-        border: "1px solid #ddd",
-        borderRadius: "10px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-
-    brand: {
-        color: "#2563eb",
-        fontWeight: "bold",
-        fontSize: "18px",
-    },
-
-    card: {
-        maxWidth: "700px",
-        margin: "100px auto",
-        padding: "40px",
-        backgroundColor: "#ffffff",
-        borderRadius: "12px",
-        textAlign: "center",
-        boxShadow:
-            "0 2px 10px rgba(0,0,0,0.08)",
-    },
-
-    projectCard: {
-        maxWidth: "1000px",
-        margin: "0 auto",
-        padding: "35px",
-        backgroundColor: "#ffffff",
-        borderRadius: "12px",
-        border: "1px solid #ddd",
-        boxSizing: "border-box",
-    },
-
-    projectCardTitle: {
-        marginTop: 0,
-    },
-
-    description: {
-        fontSize: "18px",
-        color: "#555",
-        marginBottom: "30px",
-    },
-
-
-    infoSection: {
-    padding: "25px",
-    marginBottom: "30px",
-    marginTop: 0,
-    backgroundColor: "#f8fafc",
-    borderRadius: "10px",
-    border: "1px solid #ddd",
-},
-
-
-    backButton: {
-        padding: "9px 16px",
-        border: "1px solid #aaa",
-        borderRadius: "6px",
-        backgroundColor: "#ffffff",
-        cursor: "pointer",
-        fontSize: "14px",
-    },
-
-    openButton: {
-        padding: "12px 22px",
-        border: "none",
-        borderRadius: "7px",
-        backgroundColor: "#2563eb",
-        color: "#ffffff",
-        cursor: "pointer",
-        fontSize: "16px",
-        fontWeight: "bold",
-    },
-};
 
 export default ProjectDetails;
