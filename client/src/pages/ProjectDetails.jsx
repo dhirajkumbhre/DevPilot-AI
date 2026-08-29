@@ -49,20 +49,20 @@ const ProjectDetails = ({ projectId, onBack }) => {
                     localStorage.getItem("token");
 
 
-                const response = await fetch(
-                    `${import.meta.env.VITE_API_URL}/api/projects`,
-                    {
-                        method: "GET",
+const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/projects/${projectId}`,
+    {
+        method: "GET",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json",
+        headers: {
+            "Content-Type":
+                "application/json",
 
-                            Authorization:
-                                `Bearer ${token}`,
-                        },
-                    }
-                );
+            Authorization:
+                `Bearer ${token}`,
+        },
+    }
+);
 
 
                 const data =

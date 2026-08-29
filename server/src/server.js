@@ -10,17 +10,10 @@ database connection.
 --------------------------------------------------------------
 */
 
-import dotenv from "dotenv";
+import "dotenv/config";
+
 import app from "./app.js";
 import connectDB from "./config/db.js";
-
-/*
---------------------------------------------------------------
-Load Environment Variables
---------------------------------------------------------------
-*/
-
-dotenv.config();
 
 /*
 --------------------------------------------------------------
@@ -38,6 +31,7 @@ Start Server
 
 const startServer = async () => {
     try {
+
         /*
         Connect to MongoDB before starting the API server.
         */
@@ -49,11 +43,18 @@ const startServer = async () => {
         */
 
         app.listen(PORT, () => {
-            console.log(`🚀 DevPilot AI server running on port ${PORT}`);
+            console.log(
+                `DevPilot AI server running on port ${PORT}`
+            );
         });
 
     } catch (error) {
-        console.error("❌ Server failed to start:", error.message);
+
+        console.error(
+            "Server failed to start:",
+            error.message
+        );
+
         process.exit(1);
     }
 };
