@@ -37,8 +37,15 @@ export const AuthProvider = ({ children }) => {
     );
 
 
-    const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
 
+    const storedUser =
+        localStorage.getItem("user");
+
+    return storedUser
+        ? JSON.parse(storedUser)
+        : null;
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -52,15 +59,19 @@ export const AuthProvider = ({ children }) => {
             await loginUser(credentials);
 
 
-        setUser(data.user);
+setUser(data.user);
 
-        setToken(data.token);
+setToken(data.token);
 
+localStorage.setItem(
+    "token",
+    data.token
+);
 
-        localStorage.setItem(
-            "token",
-            data.token
-        );
+localStorage.setItem(
+    "user",
+    JSON.stringify(data.user)
+);
 
 
         return data;
@@ -73,14 +84,16 @@ export const AuthProvider = ({ children }) => {
     |--------------------------------------------------------------------------
     */
 
-    const logout = () => {
+const logout = () => {
 
-        setUser(null);
+    setUser(null);
 
-        setToken(null);
+    setToken(null);
 
-        localStorage.removeItem("token");
-    };
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("user");
+};
 
 
     /*
