@@ -15,7 +15,7 @@
 |
 |--------------------------------------------------------------------------
 */
-
+import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 
 import {
@@ -32,6 +32,25 @@ import "./ProjectWorkspace.css";
 import "../styles/code-change-preview.css";
 
 
+
+
+
+const getEditorLanguage = (filePath = "") => {
+    const extension = filePath.split(".").pop()?.toLowerCase();
+
+    const languages = {
+        js: "javascript",
+        jsx: "javascript",
+        ts: "typescript",
+        tsx: "typescript",
+        json: "json",
+        css: "css",
+        html: "html",
+        md: "markdown",
+    };
+
+    return languages[extension] || "plaintext";
+};
 /*
 |--------------------------------------------------------------------------
 | File Icon
@@ -1144,31 +1163,33 @@ const ProjectWorkspace = ({
                                 </div>
 
 
-                                <textarea
-                                    value={
-                                        fileContent
-                                    }
-
-                                    onChange={
-                                        handleEditorChange
-                                    }
-
-                                    spellCheck={
-                                        false
-                                    }
-
-                                    autoCapitalize="off"
-
-                                    autoCorrect="off"
-
-                                    autoComplete="off"
-
-                                    className="code-editor"
-
-                                    aria-label={
-                                        `Editor for ${selectedFile.path}`
-                                    }
-                                />
+<Editor
+    height="100%"
+    language={getEditorLanguage(selectedFile?.path)}
+    theme="vs-dark"
+    value={fileContent}
+    onChange={(value) => {
+        handleEditorChange({
+            target: {
+                value: value ?? "",
+            },
+        });
+    }}
+    options={{
+        minimap: {
+            enabled: false,
+        },
+        fontSize: 14,
+        lineNumbers: "on",
+        wordWrap: "on",
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        tabSize: 4,
+        padding: {
+            top: 12,
+        },
+    }}
+/>
 
                             </div>
 

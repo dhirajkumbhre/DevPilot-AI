@@ -3,15 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
+  "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run",
     "preview": "vite preview"
-},
+  },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "axios": "^1.19.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
