@@ -38,6 +38,65 @@ const OLLAMA_URL =
     "http://localhost:11434/api/chat";
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Build Project Context
+|--------------------------------------------------------------------------
+*/
+
+const buildProjectContext = (files, selectedFileId) => {
+
+    const MAX_CONTEXT_LENGTH = 30000;
+
+    let context = `
+PROJECT FILES
+=============
+
+`;
+
+    const orderedFiles = [...files].sort((a, b) => {
+
+        if (
+            a._id.toString() ===
+            selectedFileId?.toString()
+        ) {
+            return -1;
+        }
+
+        if (
+            b._id.toString() ===
+            selectedFileId?.toString()
+        ) {
+            return 1;
+        }
+
+        return a.path.localeCompare(b.path);
+    });
+
+    for (const file of orderedFiles) {
+
+        const fileBlock = `
+--- ${file.path} ---
+${file.content || "This file is empty."}
+
+`;
+
+        if (
+            context.length +
+            fileBlock.length >
+            MAX_CONTEXT_LENGTH
+        ) {
+            break;
+        }
+
+        context += fileBlock;
+    }
+
+    return context;
+};
+
+
 /*
 |--------------------------------------------------------------------------
 | Generate AI Response
@@ -49,7 +108,7 @@ const OLLAMA_URL =
 |     Developer's question.
 |
 | projectId
-|     Currently opened project.
+|   Currently opened project.
 |
 | fileId
 |     Currently selected file.
@@ -108,6 +167,10 @@ export const generateAIResponse = async ({
         });
 
 
+
+        
+
+
         /*
         ----------------------------------------------------------------------
         Project not found.
@@ -121,6 +184,14 @@ export const generateAIResponse = async ({
             );
 
         }
+
+
+
+        const projectFiles = await ProjectFile.find({
+            project: projectId,
+        }).sort({
+            path: 1,
+        });
 
 
         /*
@@ -204,6 +275,13 @@ File Content:
 
 ${file.content || "This file is empty."}
 
+
+
+projectContext += buildProjectContext(
+    projectFiles,
+    fileId
+);
+
 --------------------
 `;
         }
@@ -258,32 +336,39 @@ IMPORTANT GENERAL RULES
 2. If a selected file is provided, use its actual content
    when answering questions about that file.
 
-3. Base technical claims on the code and information
+3. When project files are provided, use them to understand
+     relationships between files and the project's implementation.
+
+4. Do not assume that every project file is relevant to
+     every question. Use only the files that help answer
+     the developer's question.
+
+5. Base technical claims on the code and information
    actually provided in the context.
 
-4. Do NOT invent files, functions, variables, components,
+6. Do NOT invent files, functions, variables, components,
    dependencies, technologies, APIs, or project features
    that are not present in the provided context.
 
-5. If information required to answer the question is not
+7. If information required to answer the question is not
    available, clearly say that it is not available.
 
-6. When explaining code, mention the relevant file path
+8. When explaining code, mention the relevant file path
    when possible.
 
-7. When finding a bug, explain:
+9. When finding a bug, explain:
    - what the problem is
    - why it happens
    - how to fix it
 
-8. When providing code changes, clearly explain where
-   the code should be placed.
+10. When providing code changes, clearly explain where
+    the code should be placed.
 
-9. Keep answers practical and developer-focused.
+11. Keep answers practical and developer-focused.
 
-10. Prefer accurate answers over long answers.
+12. Prefer accurate answers over long answers.
 
-11. Do not create problems simply to make an answer
+13. Do not create problems simply to make an answer
     appear more detailed.
 
 
