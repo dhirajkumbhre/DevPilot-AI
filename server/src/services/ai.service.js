@@ -35,7 +35,12 @@ import ProjectFile from "../models/projectFile.model.js";
 
 
 const OLLAMA_URL =
+    process.env.OLLAMA_URL ||
     "http://localhost:11434/api/chat";
+
+const OLLAMA_MODEL =
+    process.env.OLLAMA_MODEL ||
+    "llama3.2";
 
 
 
@@ -275,15 +280,13 @@ File Content:
 
 ${file.content || "This file is empty."}
 
-
+--------------------
+`;
 
 projectContext += buildProjectContext(
     projectFiles,
     fileId
 );
-
---------------------
-`;
         }
 
     }
@@ -554,7 +557,7 @@ Always prioritize correctness over the number of findings.
 
             body: JSON.stringify({
 
-                model: "llama3.2",
+                model: OLLAMA_MODEL,
 
                 messages: [
 
