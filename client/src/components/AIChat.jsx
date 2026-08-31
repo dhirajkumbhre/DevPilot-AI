@@ -8,6 +8,11 @@
 |--------------------------------------------------------------------------
 */
 
+import {
+    isValidCodeChange,
+} from "../utils/codeChange.utils.js";
+
+
 import { useState } from "react";
 
 import {
@@ -15,6 +20,7 @@ import {
 } from "../services/ai.service.js";
 
 import "../styles/ai-chat.css";
+
 
 
 /*
@@ -582,25 +588,7 @@ IMPORTANT RULES:
     };
 
 
-        const isValidCodeChange = ({
-    originalCode,
-    proposedCode,
-}) => {
-    if (!proposedCode?.trim()) {
-        return false;
-    }
 
-    if (!originalCode?.trim()) {
-        return false;
-    }
-
-    // No point showing a preview when nothing actually changed.
-    if (originalCode.trim() === proposedCode.trim()) {
-        return false;
-    }
-
-    return true;
-};
 
     
 
