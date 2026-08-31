@@ -474,25 +474,27 @@ Testing Recommendations:
     |--------------------------------------------------------------------------
     */
 
-    const handleGenerateChange = () => {
+const handleGenerateChange = () => {
 
-        if (!fileContent) {
-            return;
-        }
+    const instruction = input.trim();
 
+    if (!fileContent || !instruction) {
+        return;
+    }
 
-        sendPrompt(`
+    sendPrompt(`
+Prepare a code change for the currently selected file.
 
-You are preparing a code change for the currently selected file.
+Developer request:
+${instruction}
 
-The developer wants a practical improvement to this file.
-
-Analyze the actual file carefully.
+Analyze the actual file carefully and make only the changes
+needed to satisfy the developer's request.
 
 Return your answer in exactly this structure:
 
 CHANGE SUMMARY:
-Explain briefly what you are changing and why.
+Explain briefly what you changed and why.
 
 PROPOSED CODE:
 START_CODE
@@ -505,18 +507,20 @@ IMPORTANT RULES:
 
 1. Return the COMPLETE updated file.
 2. Do not return only a snippet.
-3. Preserve existing functionality unless the requested change requires it.
-4. Do not invent dependencies.
-5. Do not invent project files.
-6. Do not remove working functionality unnecessarily.
-7. The code between START_CODE and END_CODE must be valid code.
-8. Do not put markdown fences around the code.
-9. Do not put explanations inside START_CODE and END_CODE.
-10. Base the change on the actual selected file.
+3. Follow the developer's request.
+4. Preserve existing functionality unless the requested change requires it.
+5. Do not invent dependencies.
+6. Do not invent project files.
+7. Do not remove working functionality unnecessarily.
+8. The code between START_CODE and END_CODE must be valid code.
+9. Do not put markdown fences around the code.
+10. Do not put explanations inside START_CODE and END_CODE.
+11. Base the change on the actual selected file.
+12. If the requested change cannot be safely made from the available
+    code, explain why instead of inventing an implementation.
+    `);
 
-        `);
-
-    };
+};
 
 
     /*
@@ -576,6 +580,29 @@ IMPORTANT RULES:
         return proposedCode;
 
     };
+
+
+        const isValidCodeChange = ({
+    originalCode,
+    proposedCode,
+}) => {
+    if (!proposedCode?.trim()) {
+        return false;
+    }
+
+    if (!originalCode?.trim()) {
+        return false;
+    }
+
+    // No point showing a preview when nothing actually changed.
+    if (originalCode.trim() === proposedCode.trim()) {
+        return false;
+    }
+
+    return true;
+};
+
+    
 
 
     /*
@@ -707,7 +734,8 @@ IMPORTANT RULES:
                         loading ||
                         !projectId ||
                         !fileId ||
-                        !fileContent
+                        !fileContent||
+                        !input.trim()
                     }
                 >
                     Change
@@ -754,6 +782,15 @@ IMPORTANT RULES:
                                 )
                                 : null;
 
+                        
+    
+                        const validChange =
+                            proposedCode &&
+                            isValidCodeChange({
+                                originalCode: fileContent,
+                                proposedCode,
+                            });
+
 
                         return (
 
@@ -782,7 +819,7 @@ IMPORTANT RULES:
                                 </div>
 
 
-                                {proposedCode && (
+                               {validChange &&  (
 
                                     <button
                                         type="button"
